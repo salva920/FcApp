@@ -55,8 +55,7 @@ export async function POST(request: NextRequest) {
           {
             tipo: 'Comunicado',
             titulo: `Nueva compra en Tienda por ${carrito.representante?.nombre || ''}`,
-            mensaje: `Se registró una compra por $${total.toFixed(2)}. Detalle: ${descripcion}.`,
-            color: 'blue'
+            mensaje: `Se registró una compra por $${total.toFixed(2)}. Detalle: ${descripcion}.`
           }
         )
       }
