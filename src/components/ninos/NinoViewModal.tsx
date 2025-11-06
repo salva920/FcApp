@@ -27,7 +27,7 @@ interface Nino {
   nombre: string
   apellido: string
   fechaNacimiento: string
-  cedula: string
+  cedula?: string
   alergias?: string
   emergencia?: string
   categoria: string
@@ -80,7 +80,7 @@ export const NinoViewModal: React.FC<NinoViewModalProps> = ({
                 </HStack>
                 <HStack justify="space-between">
                   <Text fontWeight="bold">Cédula:</Text>
-                  <Text>{selectedNino.cedula}</Text>
+                  <Text>{selectedNino.cedula || 'No registrada'}</Text>
                 </HStack>
                 <HStack justify="space-between">
                   <Text fontWeight="bold">Categoría:</Text>
