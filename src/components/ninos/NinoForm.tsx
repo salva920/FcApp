@@ -19,7 +19,7 @@ interface NinoFormData {
   nombre: string
   apellido: string
   fechaNacimiento: string
-  cedula: string
+  cedula?: string
   alergias: string
   emergencia: string
   categoria: string
