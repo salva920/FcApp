@@ -22,7 +22,7 @@ interface Nino {
   nombre: string
   apellido: string
   fechaNacimiento: string
-  cedula: string
+  cedula?: string
   alergias?: string
   emergencia?: string
   categoria: string
@@ -91,7 +91,7 @@ export const NinoTable: React.FC<NinoTableProps> = ({
                   )}
                 </VStack>
               </Td>
-              <Td>{nino.cedula}</Td>
+              <Td>{nino.cedula || '-'}</Td>
               <Td>{format(new Date(nino.fechaNacimiento), 'dd/MM/yyyy', { locale: es })}</Td>
               <Td>
                 <Badge colorScheme={getCategoriaColor(nino.categoria)}>
