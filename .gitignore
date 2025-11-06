@@ -1,0 +1,13 @@
+@'
+node_modules/
+.next/
+out/
+dist/
+.env
+.env.*
+!.env.example
+public/uploads/
+coverage/
+.vscode/
+.DS_Store
+'@ | Out-File -Encoding utf8 .gitignore
