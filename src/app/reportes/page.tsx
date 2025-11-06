@@ -31,7 +31,7 @@ import {
   StatArrow
 } from '@chakra-ui/react'
 import { useQuery } from '@tanstack/react-query'
-import { FiDownload, FiFileText, FiBarChart3, FiUsers, FiDollarSign } from 'react-icons/fi'
+import { FiDownload, FiFileText, FiBarChart, FiUsers, FiDollarSign } from 'react-icons/fi'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import {
