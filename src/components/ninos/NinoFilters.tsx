@@ -6,7 +6,8 @@ import {
   InputLeftElement,
   Input,
   Select,
-  HStack
+  HStack,
+  Stack
 } from '@chakra-ui/react'
 import { FiSearch } from 'react-icons/fi'
 import { useColorModeValue } from '@chakra-ui/react'
@@ -29,8 +30,12 @@ export const NinoFilters: React.FC<NinoFiltersProps> = ({
 
   return (
     <Box mb={6} p={4} bg={cardBg} borderRadius="md" borderColor={borderColor} borderWidth="1px">
-      <HStack spacing={4}>
-        <FormControl maxW="300px">
+      <Stack
+        spacing={4}
+        direction={{ base: 'column', md: 'row' }}
+        align={{ base: 'stretch', md: 'center' }}
+      >
+        <FormControl maxW={{ base: '100%', md: '300px' }}>
           <InputGroup>
             <InputLeftElement>
               <FiSearch />
@@ -42,7 +47,7 @@ export const NinoFilters: React.FC<NinoFiltersProps> = ({
             />
           </InputGroup>
         </FormControl>
-        <FormControl maxW="200px">
+        <FormControl maxW={{ base: '100%', md: '200px' }}>
           <Select
             placeholder="Todas las categorías"
             value={categoriaFilter}
@@ -57,7 +62,7 @@ export const NinoFilters: React.FC<NinoFiltersProps> = ({
             <option value="Sub-18">Sub-18</option>
           </Select>
         </FormControl>
-      </HStack>
+      </Stack>
     </Box>
   )
 }

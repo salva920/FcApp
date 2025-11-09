@@ -16,7 +16,8 @@ import {
   VStack,
   useToast,
   Text,
-  Flex
+  Flex,
+  Stack
 } from '@chakra-ui/react'
 import { useQuery } from '@tanstack/react-query'
 import { FiPlus } from 'react-icons/fi'
@@ -400,12 +401,24 @@ export default React.memo(function NinosPage() {
   if (isLoading) {
     return (
       <Container maxW="container.xl" py={4}>
-        <Flex mb={6} justifyContent="space-between" alignItems="center">
-          <Heading>Gestión de Niños</Heading>
-          <Button leftIcon={<FiPlus />} colorScheme="blue" onClick={handleNew} isDisabled>
+        <Stack
+          mb={6}
+          direction={{ base: 'column', md: 'row' }}
+          spacing={4}
+          justify="space-between"
+          align={{ base: 'stretch', md: 'center' }}
+        >
+          <Heading size="lg">Gestión de Niños</Heading>
+          <Button
+            leftIcon={<FiPlus />}
+            colorScheme="blue"
+            onClick={handleNew}
+            isDisabled
+            width={{ base: '100%', md: 'auto' }}
+          >
             Registrar Niño
           </Button>
-        </Flex>
+        </Stack>
         <Box textAlign="center" py={20}>
           <Text fontSize="lg" color="gray.600">Cargando niños...</Text>
         </Box>
@@ -415,19 +428,31 @@ export default React.memo(function NinosPage() {
 
   return (
     <Container maxW="container.xl" py={4}>
-      <Flex mb={6} justifyContent="space-between" alignItems="center">
+      <Stack
+        mb={6}
+        direction={{ base: 'column', md: 'row' }}
+        spacing={4}
+        justify="space-between"
+        align={{ base: 'stretch', md: 'center' }}
+      >
         <Box>
-          <Heading>{isRepresentante ? 'Mis Niños' : 'Gestión de Niños'}</Heading>
+          <Heading size="lg">{isRepresentante ? 'Mis Niños' : 'Gestión de Niños'}</Heading>
           {isRepresentante && (
             <Text color="gray.600" fontSize="sm" mt={1}>
               Administra la información de tus niños registrados
             </Text>
           )}
         </Box>
-        <Button leftIcon={<FiPlus />} colorScheme="blue" onClick={handleNew}>
+        <Button
+          leftIcon={<FiPlus />}
+          colorScheme="blue"
+          onClick={handleNew}
+          width={{ base: '100%', md: 'auto' }}
+          alignSelf={{ base: 'stretch', md: 'center' }}
+        >
           {isRepresentante ? 'Agregar Niño' : 'Registrar Niño'}
         </Button>
-      </Flex>
+      </Stack>
 
       {/* Filtros */}
       <NinoFilters

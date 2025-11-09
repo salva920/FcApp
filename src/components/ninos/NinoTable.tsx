@@ -11,7 +11,8 @@ import {
   VStack,
   Badge,
   Button,
-  HStack
+  HStack,
+  Stack
 } from '@chakra-ui/react'
 import { FiEdit2, FiTrash2, FiEye, FiTrendingUp } from 'react-icons/fi'
 import { format } from 'date-fns'
@@ -63,7 +64,7 @@ export const NinoTable: React.FC<NinoTableProps> = ({
 }) => {
   return (
     <Box overflowX="auto">
-      <Table variant="simple">
+      <Table variant="simple" size="md" minW="900px">
         <Thead>
           <Tr>
             <Th>Nombre Completo</Th>
@@ -138,11 +139,16 @@ export const NinoTable: React.FC<NinoTableProps> = ({
                 </Td>
               )}
               <Td>
-                <HStack spacing={2}>
+                <Stack
+                  direction={{ base: 'column', sm: 'row' }}
+                  spacing={2}
+                  align={{ base: 'stretch', sm: 'center' }}
+                >
                   <Button
                     size="sm"
                     leftIcon={<FiEdit2 />}
                     onClick={() => onEdit(nino)}
+                    width={{ base: '100%', sm: 'auto' }}
                   >
                     Editar
                   </Button>
@@ -152,11 +158,12 @@ export const NinoTable: React.FC<NinoTableProps> = ({
                       leftIcon={<FiTrash2 />}
                       colorScheme="red"
                       onClick={() => onDelete(nino.id)}
+                      width={{ base: '100%', sm: 'auto' }}
                     >
                       Eliminar
                     </Button>
                   )}
-                </HStack>
+                </Stack>
               </Td>
             </Tr>
           ))}
