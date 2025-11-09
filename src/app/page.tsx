@@ -12,7 +12,6 @@ import {
   Card,
   CardBody,
   Grid,
-  GridItem,
   Stat,
   StatLabel,
   StatNumber,
@@ -22,7 +21,8 @@ import {
   Badge,
   Alert,
   AlertIcon,
-  Spinner
+  Spinner,
+  Stack
 } from '@chakra-ui/react'
 import { FiUsers, FiDollarSign, FiBell, FiBarChart, FiCamera, FiAlertCircle } from 'react-icons/fi'
 import Link from 'next/link'
@@ -100,7 +100,7 @@ export default function HomePage() {
 
           {/* Resumen Financiero */}
           <Grid templateColumns={{ base: '1fr', md: 'repeat(3, 1fr)' }} gap={6}>
-            <Card bg={cardBg} borderColor={borderColor} borderWidth="1px">
+            <Card bg={cardBg} borderColor={borderColor} borderWidth="1px" w="100%">
               <CardBody>
                 <Stat>
                   <StatLabel>Niños Registrados</StatLabel>
@@ -113,7 +113,7 @@ export default function HomePage() {
               </CardBody>
             </Card>
 
-            <Card bg={cardBg} borderColor={borderColor} borderWidth="1px">
+            <Card bg={cardBg} borderColor={borderColor} borderWidth="1px" w="100%">
               <CardBody>
                 <Stat>
                   <StatLabel>Deuda Pendiente</StatLabel>
@@ -135,7 +135,7 @@ export default function HomePage() {
               </CardBody>
             </Card>
 
-            <Card bg={cardBg} borderColor={borderColor} borderWidth="1px">
+            <Card bg={cardBg} borderColor={borderColor} borderWidth="1px" w="100%">
               <CardBody>
                 <Stat>
                   <StatLabel>Pagos Pendientes</StatLabel>
@@ -152,25 +152,31 @@ export default function HomePage() {
 
           {/* Alerta de Deuda */}
           {totalPendiente > 0 && (
-            <Alert status="warning" borderRadius="md">
+            <Alert status="warning" borderRadius="md" alignItems="flex-start" flexWrap="wrap">
               <AlertIcon />
               <Box flex="1">
                 <Heading size="sm">Tienes deuda pendiente</Heading>
                 <Text fontSize="sm">
                   Total pendiente: <strong>${totalPendiente.toFixed(2)}</strong>
                 </Text>
-                <Button mt={2} size="sm" colorScheme="green" as={Link} href="/pago-publico">
+                <Button mt={3} size="sm" colorScheme="green" as={Link} href="/pago-publico" width={{ base: '100%', sm: 'auto' }}>
                   Pagar Ahora
                 </Button>
               </Box>
             </Alert>
           )}
 
-          {/* Accondere Rápidas */}
+          {/* Acciones Rápidas */}
           <Box>
             <Heading size="md" mb={4}>Acciones Rápidas</Heading>
             <Grid templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' }} gap={4}>
-              <Card as={Link} href="/pago-publico" _hover={{ shadow: 'md', transform: 'translateY(-2px)' }} transition="all 0.2s">
+              <Card
+                as={Link}
+                href="/pago-publico"
+                _hover={{ shadow: 'md', transform: 'translateY(-2px)' }}
+                transition="all 0.2s"
+                w="100%"
+              >
                 <CardBody>
                   <VStack spacing={3}>
                     <FiDollarSign size={32} color="#38a169" />
@@ -182,7 +188,13 @@ export default function HomePage() {
                 </CardBody>
               </Card>
 
-              <Card as={Link} href="/consultar-deuda" _hover={{ shadow: 'md', transform: 'translateY(-2px)' }} transition="all 0.2s">
+              <Card
+                as={Link}
+                href="/consultar-deuda"
+                _hover={{ shadow: 'md', transform: 'translateY(-2px)' }}
+                transition="all 0.2s"
+                w="100%"
+              >
                 <CardBody>
                   <VStack spacing={3}>
                     <FiBarChart size={32} color="#e53e3e" />
@@ -194,7 +206,13 @@ export default function HomePage() {
                 </CardBody>
               </Card>
 
-              <Card as={Link} href="/calendario" _hover={{ shadow: 'md', transform: 'translateY(-2px)' }} transition="all 0.2s">
+              <Card
+                as={Link}
+                href="/calendario"
+                _hover={{ shadow: 'md', transform: 'translateY(-2px)' }}
+                transition="all 0.2s"
+                w="100%"
+              >
                 <CardBody>
                   <VStack spacing={3}>
                     <FiBell size={32} color="#3182ce" />
@@ -216,17 +234,22 @@ export default function HomePage() {
                 <VStack spacing={3} align="stretch">
                   {pagosPendientes.slice(0, 3).map((pago: any) => (
                     <Box key={pago.id} p={3} bg="gray.50" borderRadius="md">
-                      <HStack justify="space-between">
-                        <VStack align="start" spacing={0}>
-                          <Text fontWeight="bold">{pago.concepto}</Text>
+                      <Stack
+                        direction={{ base: 'column', sm: 'row' }}
+                        justify="space-between"
+                        align={{ base: 'flex-start', sm: 'center' }}
+                        spacing={{ base: 2, sm: 4 }}
+                      >
+                        <Box>
+                          <Text fontWeight="bold" fontSize={{ base: 'md', sm: 'lg' }}>{pago.concepto}</Text>
                           <Text fontSize="sm" color="gray.600">
                             Vence: {new Date(pago.fechaVencimiento).toLocaleDateString('es-ES')}
                           </Text>
-                        </VStack>
-                        <Text fontSize="lg" fontWeight="bold" color="red.500">
+                        </Box>
+                        <Text fontSize={{ base: 'md', sm: 'lg' }} fontWeight="bold" color="red.500">
                           ${pago.monto.toFixed(2)}
                         </Text>
-                      </HStack>
+                      </Stack>
                     </Box>
                   ))}
                 </VStack>
