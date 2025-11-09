@@ -45,7 +45,9 @@ import {
   NumberInputField,
   NumberInputStepper,
   NumberIncrementStepper,
-  NumberDecrementStepper
+  NumberDecrementStepper,
+  Stack,
+  SimpleGrid
 } from '@chakra-ui/react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { FiPlus, FiEdit2, FiTrash2, FiSearch, FiDollarSign, FiCalendar, FiUpload, FiEye, FiDownload } from 'react-icons/fi'
@@ -342,12 +344,24 @@ export default function PagosPage() {
   if (isLoading) {
     return (
       <Container maxW="container.xl" py={4}>
-        <Flex mb={6} justifyContent="space-between" alignItems="center">
-          <Heading>Gestión de Pagos</Heading>
-          <Button leftIcon={<FiPlus />} colorScheme="blue" onClick={handleNew} isDisabled>
+        <Stack
+          mb={6}
+          direction={{ base: 'column', md: 'row' }}
+          spacing={4}
+          justify="space-between"
+          align={{ base: 'stretch', md: 'center' }}
+        >
+          <Heading size="lg">Gestión de Pagos</Heading>
+          <Button
+            leftIcon={<FiPlus />}
+            colorScheme="blue"
+            onClick={handleNew}
+            isDisabled
+            width={{ base: '100%', md: 'auto' }}
+          >
             Registrar Pago
           </Button>
-        </Flex>
+        </Stack>
         <Box textAlign="center" py={20}>
           <Text fontSize="lg" color="gray.600">Cargando pagos...</Text>
         </Box>
@@ -357,17 +371,29 @@ export default function PagosPage() {
 
   return (
     <Container maxW="container.xl" py={4}>
-      <Flex mb={6} justifyContent="space-between" alignItems="center">
-        <Heading>Gestión de Pagos</Heading>
-        <Button leftIcon={<FiPlus />} colorScheme="blue" onClick={handleNew}>
+      <Stack
+        mb={6}
+        direction={{ base: 'column', md: 'row' }}
+        spacing={4}
+        justify="space-between"
+        align={{ base: 'stretch', md: 'center' }}
+      >
+        <Heading size="lg">Gestión de Pagos</Heading>
+        <Button
+          leftIcon={<FiPlus />}
+          colorScheme="blue"
+          onClick={handleNew}
+          width={{ base: '100%', md: 'auto' }}
+          alignSelf={{ base: 'stretch', md: 'center' }}
+        >
           Registrar Pago
         </Button>
-      </Flex>
+      </Stack>
 
       {/* Estadísticas */}
       <Box mb={6}>
-        <HStack spacing={4}>
-          <Card flex="1">
+        <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={4}>
+          <Card>
             <CardBody>
               <Stat>
                 <StatLabel>Total Pagos</StatLabel>
@@ -379,7 +405,7 @@ export default function PagosPage() {
               </Stat>
             </CardBody>
           </Card>
-          <Card flex="1">
+          <Card>
             <CardBody>
               <Stat>
                 <StatLabel>Pagados</StatLabel>
@@ -391,7 +417,7 @@ export default function PagosPage() {
               </Stat>
             </CardBody>
           </Card>
-          <Card flex="1">
+          <Card>
             <CardBody>
               <Stat>
                 <StatLabel>Pendientes</StatLabel>
@@ -403,7 +429,7 @@ export default function PagosPage() {
               </Stat>
             </CardBody>
           </Card>
-          <Card flex="1">
+          <Card>
             <CardBody>
               <Stat>
                 <StatLabel>Vencidos</StatLabel>
@@ -415,7 +441,7 @@ export default function PagosPage() {
               </Stat>
             </CardBody>
           </Card>
-          <Card flex="1">
+          <Card>
             <CardBody>
               <Stat>
                 <StatLabel>Pendientes Verificación</StatLabel>
@@ -427,7 +453,7 @@ export default function PagosPage() {
               </Stat>
             </CardBody>
           </Card>
-          <Card flex="1">
+          <Card>
             <CardBody>
               <Stat>
                 <StatLabel>Ingresos</StatLabel>
@@ -439,13 +465,17 @@ export default function PagosPage() {
               </Stat>
             </CardBody>
           </Card>
-        </HStack>
+        </SimpleGrid>
       </Box>
 
       {/* Filtros */}
       <Box mb={6} p={4} bg={cardBg} borderRadius="md" borderColor={borderColor} borderWidth="1px">
-        <HStack spacing={4}>
-          <FormControl maxW="300px">
+        <Stack
+          spacing={4}
+          direction={{ base: 'column', md: 'row' }}
+          align={{ base: 'stretch', md: 'center' }}
+        >
+          <FormControl maxW={{ base: '100%', md: '300px' }}>
             <InputGroup>
               <InputLeftElement>
                 <FiSearch />
@@ -457,7 +487,7 @@ export default function PagosPage() {
               />
             </InputGroup>
           </FormControl>
-          <FormControl maxW="200px">
+          <FormControl maxW={{ base: '100%', md: '200px' }}>
             <Select
               placeholder="Todos los estados"
               value={estadoFilter}
@@ -468,11 +498,11 @@ export default function PagosPage() {
               <option value="Vencido">Vencido</option>
             </Select>
           </FormControl>
-        </HStack>
+        </Stack>
       </Box>
 
       <Box overflowX="auto">
-        <Table variant="simple">
+        <Table variant="simple" size="md" minW="960px">
           <Thead>
             <Tr>
               <Th>Concepto</Th>
@@ -543,11 +573,16 @@ export default function PagosPage() {
                   )}
                 </Td>
                 <Td>
-                  <HStack spacing={2}>
+                  <Stack
+                    direction={{ base: 'column', md: 'row' }}
+                    spacing={2}
+                    align={{ base: 'stretch', md: 'center' }}
+                  >
                     <Button
                       size="sm"
                       leftIcon={<FiEye />}
                       onClick={() => handleView(pago)}
+                      width={{ base: '100%', md: 'auto' }}
                     >
                       Ver
                     </Button>
@@ -558,6 +593,7 @@ export default function PagosPage() {
                           colorScheme="green"
                           isLoading={verificandoPago === pago.id}
                           onClick={() => handleVerificarPago(pago.id, 'Aprobado')}
+                          width={{ base: '100%', md: 'auto' }}
                         >
                           Aprobar
                         </Button>
@@ -566,6 +602,7 @@ export default function PagosPage() {
                           colorScheme="red"
                           isLoading={verificandoPago === pago.id}
                           onClick={() => handleVerificarPago(pago.id, 'Denegado')}
+                          width={{ base: '100%', md: 'auto' }}
                         >
                           Denegar
                         </Button>
@@ -575,6 +612,7 @@ export default function PagosPage() {
                       size="sm"
                       leftIcon={<FiEdit2 />}
                       onClick={() => handleEdit(pago)}
+                      width={{ base: '100%', md: 'auto' }}
                     >
                       Editar
                     </Button>
@@ -583,10 +621,11 @@ export default function PagosPage() {
                       leftIcon={<FiTrash2 />}
                       colorScheme="red"
                       onClick={() => handleDelete(pago.id)}
+                      width={{ base: '100%', md: 'auto' }}
                     >
                       Eliminar
                     </Button>
-                  </HStack>
+                  </Stack>
                 </Td>
               </Tr>
             ))}
@@ -605,7 +644,7 @@ export default function PagosPage() {
           <ModalBody>
             <form onSubmit={handleSubmit}>
               <VStack spacing={4}>
-                <HStack spacing={4} width="full">
+                <Stack direction={{ base: 'column', md: 'row' }} spacing={4} width="full">
                   <FormControl isRequired>
                     <FormLabel>Concepto</FormLabel>
                     <Input
@@ -633,9 +672,9 @@ export default function PagosPage() {
                       </NumberInputStepper>
                     </NumberInput>
                   </FormControl>
-                </HStack>
+                </Stack>
 
-                <HStack spacing={4} width="full">
+                <Stack direction={{ base: 'column', md: 'row' }} spacing={4} width="full">
                   <FormControl isRequired>
                     <FormLabel>Fecha de Vencimiento</FormLabel>
                     <Input
@@ -656,9 +695,9 @@ export default function PagosPage() {
                       }
                     />
                   </FormControl>
-                </HStack>
+                </Stack>
 
-                <HStack spacing={4} width="full">
+                <Stack direction={{ base: 'column', md: 'row' }} spacing={4} width="full">
                   <FormControl isRequired>
                     <FormLabel>Representante</FormLabel>
                     <Select
@@ -688,9 +727,9 @@ export default function PagosPage() {
                       <option value="Vencido">Vencido</option>
                     </Select>
                   </FormControl>
-                </HStack>
+                </Stack>
 
-                <HStack spacing={4} width="full">
+                <Stack direction={{ base: 'column', md: 'row' }} spacing={4} width="full">
                   <FormControl>
                     <FormLabel>Método de Pago</FormLabel>
                     <Select
@@ -715,7 +754,7 @@ export default function PagosPage() {
                       placeholder="URL o referencia del comprobante"
                     />
                   </FormControl>
-                </HStack>
+                </Stack>
 
                 <FormControl>
                   <FormLabel>Observaciones</FormLabel>
