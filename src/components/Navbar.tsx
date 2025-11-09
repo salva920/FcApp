@@ -3,27 +3,23 @@
 import {
   Box,
   Flex,
-  Heading,
   Button,
   HStack,
   useColorModeValue,
-  IconButton,
   Menu,
   MenuButton,
   MenuList,
   MenuItem,
   MenuDivider,
   Badge,
-  Text,
   MenuGroup
 } from '@chakra-ui/react'
-import { 
+import {
   FiHome, 
   FiLogOut, 
   FiUser, 
   FiCamera, 
   FiDollarSign, 
-  FiSearch, 
   FiCalendar, 
   FiShoppingBag,
   FiUsers,
@@ -77,9 +73,16 @@ export default function Navbar() {
       zIndex={1000}
       boxShadow="sm"
     >
-      <Flex justifyContent="space-between" alignItems="center" maxW="container.xl" mx="auto">
+      <Flex
+        justifyContent="space-between"
+        alignItems="center"
+        maxW="container.xl"
+        mx="auto"
+        flexWrap={{ base: 'wrap', md: 'nowrap' }}
+        gap={{ base: 3, md: 0 }}
+      >
         {/* Logo y botón inicio */}
-        <HStack spacing={4}>
+        <HStack spacing={{ base: 2, md: 4 }} flexWrap={{ base: 'wrap', md: 'nowrap' }}>
           <Link href="/">
             <Button
               leftIcon={<FiHome />}
@@ -98,12 +101,25 @@ export default function Navbar() {
         </HStack>
 
         {/* Navegación compacta */}
-        <HStack spacing={2}>
-          <Menu>
-            <MenuButton as={Button} size="sm" leftIcon={<FiGrid />} variant="outline">
-              Aplicaciones
+        <HStack
+          spacing={2}
+          flexWrap={{ base: 'wrap', md: 'nowrap' }}
+          justifyContent={{ base: 'flex-end', md: 'flex-start' }}
+          width={{ base: '100%', md: 'auto' }}
+        >
+          <Menu placement="bottom-end">
+            <MenuButton
+              as={Button}
+              size="sm"
+              leftIcon={<FiGrid />}
+              variant="outline"
+              px={{ base: 2, md: 3 }}
+            >
+              <Box as="span" display={{ base: 'none', md: 'inline' }}>
+                Aplicaciones
+              </Box>
             </MenuButton>
-            <MenuList>
+            <MenuList maxW="90vw" maxH="80vh" overflowY="auto">
               {isRepresentante && (
                 <>
                   <MenuGroup title="Representante">

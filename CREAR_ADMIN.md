@@ -9,6 +9,8 @@ Como administrador, necesitas crear el primer usuario admin para acceder al sist
 npm run create-admin
 ```
 Esto creará un admin con:
+
+
 - Email: `admin@footballpro.com`
 - Contraseña: `admin123`
 - Nombre: `Administrador`
