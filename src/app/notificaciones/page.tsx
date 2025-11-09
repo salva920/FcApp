@@ -363,7 +363,7 @@ export default function NotificacionesPage() {
         </Box>
 
         {/* Estadísticas rápidas */}
-        <Grid templateColumns={{ base: '1fr', md: 'repeat(4, 1fr)' }} gap={6}>
+        <Grid templateColumns={{ base: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' }} gap={6}>
           <Card bg={cardBg} borderColor={borderColor} borderWidth="1px">
             <CardBody>
               <VStack spacing={2}>
@@ -412,7 +412,12 @@ export default function NotificacionesPage() {
         {/* Botón principal para enviar notificaciones */}
         <Card bg={cardBg} borderColor={borderColor} borderWidth="1px">
           <CardBody>
-            <HStack justify="space-between">
+            <Stack
+              direction={{ base: 'column', md: 'row' }}
+              spacing={4}
+              justify="space-between"
+              align={{ base: 'stretch', md: 'center' }}
+            >
               <VStack align="start" spacing={1}>
                 <Heading size="md">Enviar Notificación</Heading>
                 <Text color="gray.600">
@@ -423,17 +428,18 @@ export default function NotificacionesPage() {
                 colorScheme="blue"
                 leftIcon={<FiSend />}
                 onClick={onOpen}
-                size="lg"
+                size="md"
+                width={{ base: '100%', md: 'auto' }}
               >
                 Nueva Notificación
               </Button>
-            </HStack>
+            </Stack>
           </CardBody>
         </Card>
 
         {/* Tabs para diferentes vistas */}
-        <Tabs>
-          <TabList>
+        <Tabs variant="enclosed">
+          <TabList overflowX="auto" whiteSpace="nowrap">
             <Tab>Historial de Notificaciones</Tab>
             <Tab>Representantes</Tab>
             <Tab>Plantillas</Tab>
@@ -445,11 +451,11 @@ export default function NotificacionesPage() {
               <Card bg={cardBg} borderColor={borderColor} borderWidth="1px">
                 <CardBody>
                   {/* Filtros */}
-                  <HStack spacing={4} mb={6}>
+                  <Stack spacing={4} direction={{ base: 'column', md: 'row' }} mb={6}>
                     <Select
                       value={filtroTipo}
                       onChange={(e) => setFiltroTipo(e.target.value)}
-                      width="200px"
+                      width={{ base: '100%', md: '200px' }}
                     >
                       <option value="Todos">Todos los tipos</option>
                       <option value="Recordatorio">Recordatorio</option>
@@ -460,7 +466,7 @@ export default function NotificacionesPage() {
                     <Select
                       value={filtroEstado}
                       onChange={(e) => setFiltroEstado(e.target.value)}
-                      width="200px"
+                      width={{ base: '100%', md: '200px' }}
                     >
                       <option value="Todos">Todos los estados</option>
                       <option value="Enviadas">Enviadas</option>
@@ -470,13 +476,15 @@ export default function NotificacionesPage() {
                     <Button
                       leftIcon={<FiRefreshCw />}
                       onClick={() => queryClient.invalidateQueries({ queryKey: ['notificaciones'] })}
+                      width={{ base: '100%', md: 'auto' }}
                     >
                       Actualizar
                     </Button>
-                  </HStack>
+                  </Stack>
 
                   {/* Tabla de notificaciones */}
-                  <Table variant="simple" size="sm">
+                  <Box overflowX="auto">
+                    <Table variant="simple" size="sm" minW="820px">
                     <Thead>
                       <Tr>
                         <Th>Tipo</Th>
@@ -548,7 +556,8 @@ export default function NotificacionesPage() {
                         </Tr>
                       ))}
                     </Tbody>
-                  </Table>
+                    </Table>
+                  </Box>
 
                   {notificacionesFiltradas.length === 0 && (
                     <Box textAlign="center" py={8}>
@@ -563,7 +572,13 @@ export default function NotificacionesPage() {
             <TabPanel px={0}>
               <Card bg={cardBg} borderColor={borderColor} borderWidth="1px">
                 <CardBody>
-                  <HStack justify="space-between" mb={4}>
+                  <Stack
+                    direction={{ base: 'column', md: 'row' }}
+                    spacing={4}
+                    justify="space-between"
+                    align={{ base: 'stretch', md: 'center' }}
+                    mb={4}
+                  >
                     <Heading size="md">Lista de Representantes</Heading>
                     <Button
                       leftIcon={<FiUsers />}
@@ -575,58 +590,62 @@ export default function NotificacionesPage() {
                         }))
                         onOpen()
                       }}
+                      width={{ base: '100%', md: 'auto' }}
                     >
                       Seleccionar para Notificar
                     </Button>
-                  </HStack>
+                  </Stack>
 
-                  <Table variant="simple" size="sm">
-                    <Thead>
-                      <Tr>
-                        <Th>Nombre</Th>
-                        <Th>Email</Th>
-                        <Th>Teléfono</Th>
-                        <Th>Niños</Th>
-                        <Th>Acciones</Th>
-                      </Tr>
-                    </Thead>
-                    <Tbody>
-                      {representantes?.map((rep) => (
-                        <Tr key={rep.id}>
-                          <Td fontWeight="bold">{rep.nombre}</Td>
-                          <Td>{rep.email}</Td>
-                          <Td>{rep.telefono}</Td>
-                          <Td>
-                            <VStack align="start" spacing={1}>
-                              {rep.ninos.map((nino) => (
-                                <Text key={nino.id} fontSize="sm">
-                                  {nino.nombre} {nino.apellido} ({nino.categoria})
-                                </Text>
-                              ))}
-                            </VStack>
-                          </Td>
-                          <Td>
-                            <Button
-                              size="sm"
-                              leftIcon={<FiBell />}
-                              onClick={() => {
-                                setNotificacionData(prev => ({ 
-                                  ...prev, 
-                                  enviarMasivo: false,
-                                  representanteId: rep.id,
-                                  categoriaFiltro: 'Todas'
-                                }))
-                                setRepresentantesSeleccionados([rep.id])
-                                onOpen()
-                              }}
-                            >
-                              Notificar
-                            </Button>
-                          </Td>
+                  <Box overflowX="auto">
+                    <Table variant="simple" size="sm" minW="820px">
+                      <Thead>
+                        <Tr>
+                          <Th>Nombre</Th>
+                          <Th>Email</Th>
+                          <Th>Teléfono</Th>
+                          <Th>Niños</Th>
+                          <Th>Acciones</Th>
                         </Tr>
-                      ))}
-                    </Tbody>
-                  </Table>
+                      </Thead>
+                      <Tbody>
+                        {representantes?.map((rep) => (
+                          <Tr key={rep.id}>
+                            <Td fontWeight="bold">{rep.nombre}</Td>
+                            <Td>{rep.email}</Td>
+                            <Td>{rep.telefono}</Td>
+                            <Td>
+                              <VStack align="start" spacing={1}>
+                                {rep.ninos.map((nino) => (
+                                  <Text key={nino.id} fontSize="sm">
+                                    {nino.nombre} {nino.apellido} ({nino.categoria})
+                                  </Text>
+                                ))}
+                              </VStack>
+                            </Td>
+                            <Td>
+                              <Button
+                                size="sm"
+                                leftIcon={<FiBell />}
+                                onClick={() => {
+                                  setNotificacionData(prev => ({ 
+                                    ...prev, 
+                                    enviarMasivo: false,
+                                    representanteId: rep.id,
+                                    categoriaFiltro: 'Todas'
+                                  }))
+                                  setRepresentantesSeleccionados([rep.id])
+                                  onOpen()
+                                }}
+                                width={{ base: '100%', md: 'auto' }}
+                              >
+                                Notificar
+                              </Button>
+                            </Td>
+                          </Tr>
+                        ))}
+                      </Tbody>
+                    </Table>
+                  </Box>
                 </CardBody>
               </Card>
             </TabPanel>
@@ -636,7 +655,7 @@ export default function NotificacionesPage() {
               <Card bg={cardBg} borderColor={borderColor} borderWidth="1px">
                 <CardBody>
                   <Heading size="md" mb={4}>Plantillas de Notificación</Heading>
-                  <Grid templateColumns={{ base: '1fr', md: 'repeat(2, 1fr)' }} gap={6}>
+                  <Grid templateColumns={{ base: 'repeat(2, 1fr)', md: 'repeat(2, 1fr)' }} gap={6}>
                     <Card borderColor={borderColor} borderWidth="1px">
                       <CardBody>
                         <Heading size="sm" mb={2}>Recordatorio de Pago</Heading>
@@ -913,12 +932,13 @@ export default function NotificacionesPage() {
                 </FormControl>
 
                 {/* Botones */}
-                <HStack spacing={4} width="full">
+                <Stack direction={{ base: 'column', md: 'row' }} spacing={4} width="full">
                   <Button
                     type="button"
                     variant="outline"
                     onClick={onClose}
                     flex={1}
+                    width={{ base: '100%', md: 'auto' }}
                   >
                     Cancelar
                   </Button>
@@ -928,10 +948,11 @@ export default function NotificacionesPage() {
                     leftIcon={<FiSend />}
                     isLoading={notificacionMutation.isPending}
                     flex={1}
+                    width={{ base: '100%', md: 'auto' }}
                   >
                     Enviar Notificación
                   </Button>
-                </HStack>
+                </Stack>
               </VStack>
             </form>
           </ModalBody>
