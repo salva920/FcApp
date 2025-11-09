@@ -392,7 +392,7 @@ export default function PagosPage() {
 
       {/* Estadísticas */}
       <Box mb={6}>
-        <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={4}>
+        <SimpleGrid columns={{ base: 2, md: 2, lg: 3 }} spacing={4}>
           <Card>
             <CardBody>
               <Stat>
