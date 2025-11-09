@@ -327,14 +327,23 @@ export default function CalendarioPage() {
     <Container maxW="container.xl" py={8}>
       <VStack spacing={8} align="stretch">
         {/* Header */}
-        <Flex justify="space-between" align="center">
+        <Stack
+          direction={{ base: 'column', lg: 'row' }}
+          spacing={4}
+          justify="space-between"
+          align={{ base: 'stretch', lg: 'center' }}
+        >
           <Box>
             <Heading size="xl" mb={2}>📅 Calendario de Actividades</Heading>
             <Text color="gray.600">
               Vista unificada de entrenamientos, partidos y eventos
             </Text>
           </Box>
-          <HStack spacing={4}>
+          <Stack
+            direction={{ base: 'column', md: 'row' }}
+            spacing={3}
+            align={{ base: 'stretch', md: 'center' }}
+          >
             {isAdmin && (
               <>
                 <Button
@@ -342,6 +351,7 @@ export default function CalendarioPage() {
                   colorScheme="green"
                   variant="outline"
                   onClick={() => window.location.href = '/calendario/instructores'}
+                  width={{ base: '100%', md: 'auto' }}
                 >
                   Instructores
                 </Button>
@@ -350,6 +360,7 @@ export default function CalendarioPage() {
                   colorScheme="purple"
                   variant="outline"
                   onClick={() => window.location.href = '/calendario/canchas'}
+                  width={{ base: '100%', md: 'auto' }}
                 >
                   Canchas
                 </Button>
@@ -363,27 +374,33 @@ export default function CalendarioPage() {
                   resetForm()
                   onOpen()
                 }}
+                width={{ base: '100%', md: 'auto' }}
               >
                 Nueva Actividad
               </Button>
             )}
-          </HStack>
-        </Flex>
+          </Stack>
+        </Stack>
 
         {/* Navegación de semana */}
         <Card>
           <CardBody>
-            <HStack justify="space-between">
-              <Button onClick={() => setCurrentWeek(subWeeks(currentWeek, 1))}>
+            <Stack
+              direction={{ base: 'column', md: 'row' }}
+              spacing={3}
+              justify="space-between"
+              align={{ base: 'stretch', md: 'center' }}
+            >
+              <Button onClick={() => setCurrentWeek(subWeeks(currentWeek, 1))} width={{ base: '100%', md: 'auto' }}>
                 Semana Anterior
               </Button>
-              <Text fontWeight="bold" fontSize="lg">
+              <Text fontWeight="bold" fontSize="lg" textAlign="center">
                 {format(startDate, "d 'de' MMMM", { locale: es })} - {format(endDate, "d 'de' MMMM yyyy", { locale: es })}
               </Text>
-              <Button onClick={() => setCurrentWeek(addWeeks(currentWeek, 1))}>
+              <Button onClick={() => setCurrentWeek(addWeeks(currentWeek, 1))} width={{ base: '100%', md: 'auto' }}>
                 Semana Siguiente
               </Button>
-            </HStack>
+            </Stack>
           </CardBody>
         </Card>
 
@@ -431,7 +448,8 @@ export default function CalendarioPage() {
         <Card>
           <CardBody>
             <Heading size="md" mb={4}>Actividades de la Semana</Heading>
-            <Table variant="simple" size="sm">
+            <Box overflowX="auto">
+              <Table variant="simple" size="sm" minW="820px">
               <Thead>
                 <Tr>
                   <Th>Fecha/Hora</Th>
@@ -474,7 +492,11 @@ export default function CalendarioPage() {
                     <Td>{actividad.cancha?.nombre || '-'}</Td>
                     {(isAdmin || isProfesor) && (
                       <Td>
-                        <HStack spacing={2}>
+                        <Stack
+                          direction={{ base: 'column', md: 'row' }}
+                          spacing={2}
+                          align={{ base: 'stretch', md: 'center' }}
+                        >
                           {actividad.categoria && actividad.estado === 'Aprobada' && (
                             <Button
                               size="sm"
@@ -482,6 +504,7 @@ export default function CalendarioPage() {
                               variant="outline"
                               leftIcon={<FiUserCheck />}
                               onClick={() => handleGestionarAsistencia(actividad)}
+                              width={{ base: '100%', md: 'auto' }}
                             >
                               Asistencia
                             </Button>
@@ -501,6 +524,7 @@ export default function CalendarioPage() {
                                   })
                                   queryClient.invalidateQueries({ queryKey: ['actividades'] })
                                 }}
+                                width={{ base: '100%', md: 'auto' }}
                               >
                                 Aprobar
                               </Button>
@@ -517,6 +541,7 @@ export default function CalendarioPage() {
                                   })
                                   queryClient.invalidateQueries({ queryKey: ['actividades'] })
                                 }}
+                                width={{ base: '100%', md: 'auto' }}
                               >
                                 Rechazar
                               </Button>
@@ -528,16 +553,18 @@ export default function CalendarioPage() {
                             variant="outline"
                             leftIcon={<FiX />}
                             onClick={() => handleCancelar(actividad)}
+                            width={{ base: '100%', md: 'auto' }}
                           >
                             Cancelar
                           </Button>
-                        </HStack>
+                        </Stack>
                       </Td>
                     )}
                   </Tr>
                 ))}
               </Tbody>
-            </Table>
+              </Table>
+            </Box>
           </CardBody>
         </Card>
       </VStack>
@@ -569,7 +596,7 @@ export default function CalendarioPage() {
                   />
                 </FormControl>
 
-                <HStack spacing={4} width="full">
+                <Stack direction={{ base: 'column', md: 'row' }} spacing={4} width="full">
                   <FormControl isRequired>
                     <FormLabel>Tipo</FormLabel>
                     <Select
@@ -599,7 +626,7 @@ export default function CalendarioPage() {
                       <option value="Sub-18">Sub-18</option>
                     </Select>
                   </FormControl>
-                </HStack>
+                </Stack>
 
                 <Grid templateColumns={{ base: '1fr', md: '1fr 1fr' }} gap={4} width="full" minW={0}>
                   <FormControl isRequired minW={0}>
@@ -625,7 +652,7 @@ export default function CalendarioPage() {
                   </FormControl>
                 </Grid>
 
-                <HStack spacing={4} width="full">
+                <Stack direction={{ base: 'column', md: 'row' }} spacing={4} width="full">
                   <FormControl>
                     <FormLabel>Instructor</FormLabel>
                     <Select
@@ -655,16 +682,16 @@ export default function CalendarioPage() {
                       ))}
                     </Select>
                   </FormControl>
-                </HStack>
+                </Stack>
 
-                <HStack spacing={4} width="full">
-                  <Button type="button" onClick={onClose} flex={1}>
+                <Stack direction={{ base: 'column', md: 'row' }} spacing={4} width="full">
+                  <Button type="button" onClick={onClose} flex={1} width={{ base: '100%', md: 'auto' }}>
                     Cancelar
                   </Button>
-                  <Button type="submit" colorScheme="blue" flex={1}>
+                  <Button type="submit" colorScheme="blue" flex={1} width={{ base: '100%', md: 'auto' }}>
                     Crear Actividad
                   </Button>
-                </HStack>
+                </Stack>
               </VStack>
             </ModalBody>
           </form>
@@ -729,12 +756,13 @@ export default function CalendarioPage() {
                   />
                 </FormControl>
 
-                <HStack spacing={4} width="full">
+                <Stack direction={{ base: 'column', md: 'row' }} spacing={4} width="full">
                   <Button
                     type="button"
                     variant="outline"
                     onClick={onCancelClose}
                     flex={1}
+                    width={{ base: '100%', md: 'auto' }}
                   >
                     Volver
                   </Button>
@@ -752,10 +780,11 @@ export default function CalendarioPage() {
                     }}
                     isLoading={cancelarActividadMutation.isPending}
                     flex={1}
+                    width={{ base: '100%', md: 'auto' }}
                   >
                     Confirmar Cancelación
                   </Button>
-                </HStack>
+                </Stack>
               </VStack>
             )}
           </ModalBody>
@@ -799,7 +828,7 @@ export default function CalendarioPage() {
                 {ninosPorCategoria && ninosPorCategoria.length > 0 ? (
                   <>
                     {/* Estadísticas */}
-                    <HStack spacing={4}>
+                    <Stack direction={{ base: 'column', md: 'row' }} spacing={4}>
                       <Card bg="green.50" borderWidth="2px" borderColor="green.300" flex={1}>
                         <CardBody>
                           <VStack spacing={1}>
@@ -836,7 +865,7 @@ export default function CalendarioPage() {
                           </VStack>
                         </CardBody>
                       </Card>
-                    </HStack>
+                    </Stack>
 
                     {/* Alerta de ausentes */}
                     {ninosAsistencia.filter(a => !a.presente).length > 0 && (
@@ -956,12 +985,13 @@ export default function CalendarioPage() {
                       </VStack>
                     </Box>
 
-                    <HStack spacing={4} width="full">
+                    <Stack direction={{ base: 'column', md: 'row' }} spacing={4} width="full">
                       <Button
                         type="button"
                         variant="outline"
                         onClick={onAsistenciaClose}
                         flex={1}
+                        width={{ base: '100%', md: 'auto' }}
                       >
                         Cancelar
                       </Button>
@@ -972,10 +1002,11 @@ export default function CalendarioPage() {
                         onClick={handleGuardarAsistencias}
                         isLoading={guardarAsistenciasMutation.isPending}
                         flex={1}
+                        width={{ base: '100%', md: 'auto' }}
                       >
                         Guardar Asistencias
                       </Button>
-                    </HStack>
+                    </Stack>
                   </>
                 ) : (
                   <Alert status="info">
