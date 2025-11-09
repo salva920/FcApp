@@ -37,7 +37,9 @@ import {
   FormControl,
   FormLabel,
   InputGroup,
-  InputLeftElement
+  InputLeftElement,
+  Stack,
+  SimpleGrid
 } from '@chakra-ui/react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { FiShoppingCart, FiShoppingBag, FiSearch, FiStar, FiPackage, FiAlertCircle, FiShoppingCart as FiCart, FiPlus } from 'react-icons/fi'
@@ -185,7 +187,12 @@ export default function TiendaPage() {
     <Container maxW="container.xl" py={8}>
       <VStack spacing={8} align="stretch">
         {/* Header */}
-        <Flex justify="space-between" align="center">
+        <Stack
+          direction={{ base: 'column', md: 'row' }}
+          spacing={4}
+          justify="space-between"
+          align={{ base: 'stretch', md: 'center' }}
+        >
           <Box>
             <Heading size="xl" color="blue.600" mb={2}>
               🛍️ Tienda del Club
@@ -194,14 +201,15 @@ export default function TiendaPage() {
               Uniformes, equipamiento y accesorios
             </Text>
           </Box>
-          <HStack spacing={4}>
+          <Stack direction={{ base: 'column', sm: 'row' }} spacing={3} justify="flex-end">
             {isAdmin && (
               <Button
                 leftIcon={<FiPlus />}
                 colorScheme="green"
                 variant="outline"
-                size="lg"
+                size="md"
                 onClick={() => window.location.href = '/tienda/productos'}
+                width={{ base: '100%', sm: 'auto' }}
               >
                 Gestionar Productos
               </Button>
@@ -209,13 +217,14 @@ export default function TiendaPage() {
             <Button
               leftIcon={<FiShoppingCart />}
               colorScheme="blue"
-              size="lg"
+              size="md"
               onClick={onCartOpen}
+              width={{ base: '100%', sm: 'auto' }}
             >
               Ver Carrito
             </Button>
-          </HStack>
-        </Flex>
+          </Stack>
+        </Stack>
 
         {/* Filtros */}
         <Card>
@@ -251,20 +260,28 @@ export default function TiendaPage() {
         </Card>
 
         {/* Estadísticas */}
-        <HStack spacing={6}>
-          <Stat>
-            <StatLabel>Total Productos</StatLabel>
-            <StatNumber color="blue.500">{productos?.length || 0}</StatNumber>
-            <StatLabel fontSize="sm">Disponibles</StatLabel>
-          </Stat>
-          <Stat>
-            <StatLabel>Stock Bajo</StatLabel>
-            <StatNumber color="orange.500">
-              {productos?.filter(p => p.stock <= p.stockMinimo).length || 0}
-            </StatNumber>
-            <StatLabel fontSize="sm">Requieren atención</StatLabel>
-          </Stat>
-        </HStack>
+        <SimpleGrid columns={{ base: 2, sm: 2, md: 4 }} spacing={4}>
+          <Card>
+            <CardBody>
+              <Stat>
+                <StatLabel>Total Productos</StatLabel>
+                <StatNumber color="blue.500">{productos?.length || 0}</StatNumber>
+                <StatLabel fontSize="sm">Disponibles</StatLabel>
+              </Stat>
+            </CardBody>
+          </Card>
+          <Card>
+            <CardBody>
+              <Stat>
+                <StatLabel>Stock Bajo</StatLabel>
+                <StatNumber color="orange.500">
+                  {productos?.filter(p => p.stock <= p.stockMinimo).length || 0}
+                </StatNumber>
+                <StatLabel fontSize="sm">Requieren atención</StatLabel>
+              </Stat>
+            </CardBody>
+          </Card>
+        </SimpleGrid>
 
         {/* Catálogo de productos */}
         {isLoading ? (
@@ -435,20 +452,20 @@ export default function TiendaPage() {
                       {carrito.items.map((it: any) => (
                         <Card key={it.id}>
                           <CardBody>
-                            <HStack justify="space-between" align="start">
+                            <Stack direction={{ base: 'column', sm: 'row' }} justify="space-between" align={{ base: 'stretch', sm: 'start' }} spacing={3}>
                               <VStack align="start" spacing={0}>
                                 <Text fontWeight="bold">{it.producto.nombre}</Text>
                                 <Text fontSize="sm" color="gray.600">Talla: {it.talla || 'N/A'}</Text>
                               </VStack>
-                              <VStack align="end" spacing={1}>
+                              <VStack align={{ base: 'flex-start', sm: 'flex-end' }} spacing={2}>
                                 <Text color="blue.600" fontWeight="bold">${it.producto.precio.toFixed(2)}</Text>
-                                <HStack>
+                                <Stack direction={{ base: 'column', sm: 'row' }} spacing={2} align={{ base: 'stretch', sm: 'center' }}>
                                   <Button size="sm" onClick={async () => {
                                     const nueva = Math.max(1, it.cantidad - 1)
                                     await fetch('/api/carrito', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ itemId: it.id, cantidad: nueva }) })
                                     fetchCarrito()
                                   }}>-</Button>
-                                  <Text>{it.cantidad}</Text>
+                                  <Text textAlign="center">{it.cantidad}</Text>
                                   <Button size="sm" onClick={async () => {
                                     const nueva = it.cantidad + 1
                                     await fetch('/api/carrito', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ itemId: it.id, cantidad: nueva }) })
@@ -458,9 +475,9 @@ export default function TiendaPage() {
                                     await fetch(`/api/carrito?itemId=${it.id}`, { method: 'DELETE' })
                                     fetchCarrito()
                                   }}>Quitar</Button>
-                                </HStack>
+                                </Stack>
                               </VStack>
-                            </HStack>
+                            </Stack>
                           </CardBody>
                         </Card>
                       ))}
