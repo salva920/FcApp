@@ -27,11 +27,7 @@ import {
   Tab,
   TabPanel,
   Select,
-  Textarea,
-  Image,
-  SimpleGrid,
-  Stack,
-  Badge
+  Textarea
 } from '@chakra-ui/react'
 import { FiMail, FiLock, FiEye, FiEyeOff, FiUser, FiPhone, FiBriefcase } from 'react-icons/fi'
 import Link from 'next/link'
@@ -65,16 +61,11 @@ export default function LoginPage() {
   const [registroError, setRegistroError] = useState('')
   const [registroSuccess, setRegistroSuccess] = useState(false)
 
-  const primaryRed = '#E30613'
-  const accentOrange = '#F57C00'
-  const tigerYellow = '#FFC107'
-  const deepBlack = '#0B0B0B'
-
   const cardBg = useColorModeValue('white', 'gray.800')
   const borderColor = useColorModeValue('gray.200', 'gray.600')
   const gradientBg = useColorModeValue(
-    `linear(to-br, rgba(227, 6, 19, 0.08), rgba(11, 11, 11, 0.92))`,
-    `linear(to-br, rgba(227, 6, 19, 0.25), rgba(0, 0, 0, 0.95))`
+    'linear(to-br, blue.50, green.50, yellow.50)',
+    'linear(to-br, gray.800, gray.700, gray.600)'
   )
 
   useEffect(() => {
@@ -209,80 +200,50 @@ export default function LoginPage() {
       overflow="hidden"
     >
       {/* Elementos decorativos */}
-      <Box position="absolute" top="10%" left="5%" opacity={0.12}>
-        <Text fontSize="6xl" color={primaryRed} transform="rotate(-15deg)">⚽</Text>
+      <Box position="absolute" top="10%" left="5%" opacity={0.1}>
+        <Text fontSize="6xl" color="green.500" transform="rotate(-15deg)">⚽</Text>
       </Box>
-      <Box position="absolute" top="20%" right="10%" opacity={0.12}>
-        <Text fontSize="4xl" color={accentOrange} transform="rotate(15deg)">🏆</Text>
+      <Box position="absolute" top="20%" right="10%" opacity={0.1}>
+        <Text fontSize="4xl" color="blue.500" transform="rotate(15deg)">🏆</Text>
       </Box>
-      <Box position="absolute" bottom="15%" left="15%" opacity={0.12}>
-        <Text fontSize="5xl" color={tigerYellow} transform="rotate(-10deg)">⚽</Text>
+      <Box position="absolute" bottom="15%" left="15%" opacity={0.1}>
+        <Text fontSize="5xl" color="yellow.500" transform="rotate(-10deg)">⚽</Text>
       </Box>
 
-      <Container maxW="6xl" py={12}>
-        <SimpleGrid columns={{ base: 1, lg: 2 }} gap={{ base: 8, lg: 12 }} alignItems="stretch">
-          <Stack spacing={6} justify="center">
-            <VStack spacing={4} textAlign={{ base: 'center', lg: 'left' }}>
-              <Box position="relative" display="inline-flex">
-                <Image
-                  src="/photo_2025-11-09_17-03-16.jpg"
-                  alt="Logo Tigres F.C. Anzoátegui"
-                  boxSize={{ base: '120px', md: '140px' }}
-                  borderRadius="md"
-                  border="4px solid"
-                  borderColor={primaryRed}
-                  shadow="2xl"
-                  bg="black"
-                  objectFit="cover"
-                />
-                <Badge
-                  position="absolute"
-                  bottom={-2}
-                  right={-2}
-                  bg={accentOrange}
-                  color="black"
-                  px={3}
-                  py={1}
-                  borderRadius="full"
-                  fontSize="xs"
-                  textTransform="uppercase"
-                  letterSpacing="wide"
-                >
-                  Tigres F.C.
-                </Badge>
-              </Box>
-              <Heading size="2xl" color={primaryRed} fontWeight="extrabold">
-                Gestión Football Pro
-              </Heading>
-              <Text fontSize="lg" color="gray.300" maxW={{ base: 'full', md: 'sm' }}>
-                Plataforma oficial para representantes, profesores y administradores del club Tigres F.C. Anzoátegui.
-              </Text>
-              <Stack direction={{ base: 'column', sm: 'row' }} spacing={4} pt={2}>
-                <Badge bg={primaryRed} color="white" px={4} py={2} borderRadius="full" textTransform="uppercase">
-                  Pasión Roja
-                </Badge>
-                <Badge bg={accentOrange} color="black" px={4} py={2} borderRadius="full" textTransform="uppercase">
-                  Garra Felina
-                </Badge>
-                <Badge bg={tigerYellow} color="black" px={4} py={2} borderRadius="full" textTransform="uppercase">
-                  Temporada 2024
-                </Badge>
-              </Stack>
-            </VStack>
-          </Stack>
+      <Container maxW="md" py={12}>
+        <VStack spacing={8}>
+          <VStack spacing={4} textAlign="center">
+            <Box position="relative">
+              <Text fontSize="6xl" mb={2}>⚽</Text>
+              <Box
+                position="absolute"
+                top="-2"
+                right="-2"
+                w="4"
+                h="4"
+                bg="green.400"
+                borderRadius="full"
+              />
+            </Box>
+            <Heading size="2xl" color="blue.600" fontWeight="bold">
+              Gestión Football Pro
+            </Heading>
+            <Text fontSize="lg" color="gray.600" maxW="sm">
+              Accede o regístrate para gestionar la escuela de fútbol
+            </Text>
+          </VStack>
 
-          <VStack spacing={8}>
-            <Card w="full" bg={cardBg} borderColor={borderColor} borderWidth="1px" shadow="2xl" borderRadius="2xl">
-              <CardBody p={0}>
-                <Tabs defaultIndex={0} colorScheme="red">
-                  <TabList>
-                    <Tab flex={1} fontWeight="semibold">Iniciar Sesión</Tab>
-                    <Tab flex={1} fontWeight="semibold">Registrarse</Tab>
-                  </TabList>
+          <Card w="full" bg={cardBg} borderColor={borderColor} borderWidth="1px" shadow="xl" borderRadius="xl">
+            <CardBody p={0}>
+              <Tabs defaultIndex={0} colorScheme="blue">
+                <TabList>
+                  <Tab flex={1} fontWeight="semibold">Iniciar Sesión</Tab>
+                  <Tab flex={1} fontWeight="semibold">Registrarse</Tab>
+                </TabList>
 
-                  <TabPanels>
-                    {/* Pestaña Login */}
-                    <TabPanel px={8} py={6}>
+                <TabPanels>
+                  {/* Pestaña Login */}
+                  <TabPanel px={8} py={6}>
               <form onSubmit={handleSubmit}>
                 <VStack spacing={6}>
                   {error && (
@@ -337,7 +298,7 @@ export default function LoginPage() {
 
                   <Button
                     type="submit"
-                    colorScheme="red"
+                    colorScheme="blue"
                     size="lg"
                     width="full"
                     isLoading={isLoading}
@@ -528,7 +489,7 @@ export default function LoginPage() {
 
                         <Button
                           type="submit"
-                          colorScheme="red"
+                          colorScheme="green"
                           size="lg"
                           width="full"
                           isLoading={isLoadingRegistro}
@@ -544,13 +505,12 @@ export default function LoginPage() {
             </CardBody>
           </Card>
 
-          <VStack spacing={2} textAlign={{ base: 'center', lg: 'left' }}>
-            <Text fontSize="sm" color="gray.400">
+          <VStack spacing={2} textAlign="center">
+            <Text fontSize="sm" color="gray.500">
               © 2024 Gestión Football Pro
             </Text>
           </VStack>
         </VStack>
-      </SimpleGrid>
       </Container>
     </Box>
   )
