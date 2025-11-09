@@ -41,7 +41,9 @@ import {
   StatArrow,
   Divider,
   Progress,
-  IconButton
+  IconButton,
+  Stack,
+  SimpleGrid
 } from '@chakra-ui/react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { FiPlus, FiEdit2, FiTrash2, FiSearch, FiUser, FiDollarSign, FiUsers, FiChevronLeft, FiChevronRight } from 'react-icons/fi'
@@ -503,17 +505,29 @@ export default function RepresentantesPage() {
 
   return (
     <Container maxW="container.xl" py={4}>
-      <Flex mb={6} justifyContent="space-between" alignItems="center">
-        <Heading>Gestión de Representantes</Heading>
-        <Button leftIcon={<FiPlus />} colorScheme="blue" onClick={handleNew}>
+      <Stack
+        mb={6}
+        direction={{ base: 'column', md: 'row' }}
+        spacing={4}
+        justify="space-between"
+        align={{ base: 'stretch', md: 'center' }}
+      >
+        <Heading size="lg">Gestión de Representantes</Heading>
+        <Button
+          leftIcon={<FiPlus />}
+          colorScheme="blue"
+          onClick={handleNew}
+          width={{ base: '100%', md: 'auto' }}
+          alignSelf={{ base: 'stretch', md: 'center' }}
+        >
           Nuevo Representante
         </Button>
-      </Flex>
+      </Stack>
 
       {/* Estadísticas rápidas */}
       <Box mb={6}>
-        <HStack spacing={4}>
-          <Card flex="1">
+        <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4}>
+          <Card>
             <CardBody>
               <Stat>
                 <StatLabel>Total Representantes</StatLabel>
@@ -525,7 +539,7 @@ export default function RepresentantesPage() {
               </Stat>
             </CardBody>
           </Card>
-          <Card flex="1">
+          <Card>
             <CardBody>
               <Stat>
                 <StatLabel>Con Niños Activos</StatLabel>
@@ -539,7 +553,7 @@ export default function RepresentantesPage() {
               </Stat>
             </CardBody>
           </Card>
-          <Card flex="1">
+          <Card>
             <CardBody>
               <Stat>
                 <StatLabel>Con Pagos Pendientes</StatLabel>
@@ -553,12 +567,12 @@ export default function RepresentantesPage() {
               </Stat>
             </CardBody>
           </Card>
-        </HStack>
+        </SimpleGrid>
       </Box>
 
       {/* Búsqueda */}
       <Box mb={6} p={4} bg={cardBg} borderRadius="md" borderColor={borderColor} borderWidth="1px">
-        <FormControl maxW="400px">
+        <FormControl maxW={{ base: '100%', md: '400px' }} width="full">
           <InputGroup>
             <InputLeftElement>
               <FiSearch />
@@ -573,7 +587,7 @@ export default function RepresentantesPage() {
       </Box>
 
       <Box overflowX="auto">
-        <Table variant="simple">
+        <Table variant="simple" size="md" minW="760px">
           <Thead>
             <Tr>
               <Th>Representante</Th>
@@ -633,11 +647,16 @@ export default function RepresentantesPage() {
                   </Text>
                 </Td>
                 <Td>
-                  <HStack spacing={2}>
+                  <Stack
+                    direction={{ base: 'column', sm: 'row' }}
+                    spacing={2}
+                    align={{ base: 'stretch', sm: 'center' }}
+                  >
                     <Button
                       size="sm"
                       leftIcon={<FiEdit2 />}
                       onClick={() => handleEdit(representante)}
+                      width={{ base: '100%', sm: 'auto' }}
                     >
                       Editar
                     </Button>
@@ -647,10 +666,11 @@ export default function RepresentantesPage() {
                       colorScheme="red"
                       onClick={() => handleDelete(representante.id)}
                       isDisabled={representante._count.ninos > 0}
+                      width={{ base: '100%', sm: 'auto' }}
                     >
                       Eliminar
                     </Button>
-                  </HStack>
+                  </Stack>
                 </Td>
               </Tr>
             ))}
