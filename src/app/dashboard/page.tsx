@@ -257,8 +257,13 @@ export default function DashboardPage() {
         {/* Acceso rápido al módulo de notificaciones */}
         <Card bg={cardBg} borderColor={borderColor} borderWidth="1px">
           <CardBody>
-            <HStack justify="space-between">
-              <VStack align="start" spacing={1}>
+            <HStack
+              justify="space-between"
+              spacing={{ base: 3, md: 6 }}
+              flexWrap={{ base: 'wrap', md: 'nowrap' }}
+              align="flex-start"
+            >
+              <VStack align="start" spacing={1} flex="1" minW={0}>
                 <Heading size="md">Módulo de Notificaciones</Heading>
                 <Text color="gray.600">
                   Gestiona comunicaciones masivas, recordatorios y notificaciones a representantes
@@ -268,7 +273,9 @@ export default function DashboardPage() {
                 colorScheme="purple"
                 leftIcon={<FiBell />}
                 onClick={() => router.push('/notificaciones')}
-                size="lg"
+                size="md"
+                width={{ base: '100%', sm: 'auto' }}
+                alignSelf={{ base: 'stretch', md: 'center' }}
               >
                 Ir a Notificaciones
               </Button>
@@ -331,34 +338,36 @@ export default function DashboardPage() {
           <Card bg={cardBg} borderColor={borderColor} borderWidth="1px">
             <CardBody>
               <Heading size="md" mb={4}>Representantes con Pagos Pendientes</Heading>
-              <Table variant="simple" size="sm">
-                <Thead>
-                  <Tr>
-                    <Th>Representante</Th>
-                    <Th>Cédula</Th>
-                    <Th>Email</Th>
-                    <Th>Pagos Pendientes</Th>
-                    <Th>Acciones</Th>
-                  </Tr>
-                </Thead>
-                <Tbody>
-                  {estadisticas.deudores.lista.map((deudor) => (
-                    <Tr key={deudor.id}>
-                      <Td fontWeight="bold">{deudor.nombre}</Td>
-                      <Td>{deudor.cedula}</Td>
-                      <Td>{deudor.email}</Td>
-                      <Td>
-                        <Badge colorScheme="red">{deudor.pagosPendientes}</Badge>
-                      </Td>
-                      <Td>
-                        <Button size="sm" colorScheme="orange" leftIcon={<FiBell />}>
-                          Recordar
-                        </Button>
-                      </Td>
+              <Box overflowX="auto">
+                <Table variant="simple" size="sm" minW="620px">
+                  <Thead>
+                    <Tr>
+                      <Th>Representante</Th>
+                      <Th>Cédula</Th>
+                      <Th>Email</Th>
+                      <Th textAlign="center">Pagos Pendientes</Th>
+                      <Th textAlign="center">Acciones</Th>
                     </Tr>
-                  ))}
-                </Tbody>
-              </Table>
+                  </Thead>
+                  <Tbody>
+                    {estadisticas.deudores.lista.map((deudor) => (
+                      <Tr key={deudor.id}>
+                        <Td fontWeight="bold">{deudor.nombre}</Td>
+                        <Td>{deudor.cedula}</Td>
+                        <Td>{deudor.email}</Td>
+                        <Td textAlign="center">
+                          <Badge colorScheme="red">{deudor.pagosPendientes}</Badge>
+                        </Td>
+                        <Td textAlign="center">
+                          <Button size="sm" colorScheme="orange" leftIcon={<FiBell />}>
+                            Recordar
+                          </Button>
+                        </Td>
+                      </Tr>
+                    ))}
+                  </Tbody>
+                </Table>
+              </Box>
             </CardBody>
           </Card>
         )}
