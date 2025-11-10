@@ -19,7 +19,8 @@ import {
   TabList,
   Tab,
   TabPanels,
-  TabPanel
+  TabPanel,
+  Stack
 } from '@chakra-ui/react'
 import Link from 'next/link'
 import EquiposPage from './equipos/page'
@@ -108,40 +109,56 @@ export default function TorneosPage() {
                 <Card>
                   <CardBody>
                     <VStack spacing={4} align="stretch">
-                      <HStack>
+                      <Stack direction={{ base: 'column', xl: 'row' }} spacing={4}>
                         <Input
+                          flex={1}
                           placeholder="Nombre del torneo"
                           value={form.nombre}
                           onChange={(e) => setForm({ ...form, nombre: e.target.value })}
                         />
-                        <Select value={form.tipo} onChange={(e) => setForm({ ...form, tipo: e.target.value })}>
+                        <Select
+                          flex={{ base: 1, xl: 'unset' }}
+                          value={form.tipo}
+                          onChange={(e) => setForm({ ...form, tipo: e.target.value })}
+                        >
                           <option value="Liga">Liga</option>
                           <option value="Eliminatoria">Eliminatoria</option>
                           <option value="Grupos">Grupos</option>
                         </Select>
-                        <Select value={form.formato} onChange={(e) => setForm({ ...form, formato: e.target.value })}>
+                        <Select
+                          flex={{ base: 1, xl: 'unset' }}
+                          value={form.formato}
+                          onChange={(e) => setForm({ ...form, formato: e.target.value })}
+                        >
                           <option value="round-robin">Round Robin</option>
                           <option value="ida-vuelta">Ida y Vuelta</option>
                           <option value="playoff">Playoff</option>
                         </Select>
-                        <Select value={form.ambito} onChange={(e) => setForm({ ...form, ambito: e.target.value })}>
+                        <Select
+                          flex={{ base: 1, xl: 'unset' }}
+                          value={form.ambito}
+                          onChange={(e) => setForm({ ...form, ambito: e.target.value })}
+                        >
                           <option value="Interno">Interno</option>
                           <option value="Externo">Externo</option>
                         </Select>
-                      </HStack>
+                      </Stack>
 
-                      <HStack>
+                      <Stack direction={{ base: 'column', xl: 'row' }} spacing={4}>
                         <Input
+                          flex={1}
                           type="date"
                           value={form.fechaInicio}
                           onChange={(e) => setForm({ ...form, fechaInicio: e.target.value })}
                         />
                         <Input
+                          flex={1}
                           type="date"
                           value={form.fechaFin}
                           onChange={(e) => setForm({ ...form, fechaFin: e.target.value })}
                         />
                         <Input
+                          flex={1}
                           placeholder="Categoría (opcional)"
                           value={form.categoria}
                           onChange={(e) => setForm({ ...form, categoria: e.target.value })}
@@ -150,10 +167,13 @@ export default function TorneosPage() {
                           colorScheme="blue"
                           onClick={() => createMutation.mutate(form)}
                           isLoading={createMutation.isPending}
+                          width={{ base: '100%', xl: 'auto' }}
+                          whiteSpace="nowrap"
+                          flexShrink={0}
                         >
                           Crear Torneo
                         </Button>
-                      </HStack>
+                      </Stack>
                     </VStack>
                   </CardBody>
                 </Card>

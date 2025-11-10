@@ -6,6 +6,7 @@ import {
   Container,
   Heading,
   VStack,
+  Stack,
   HStack,
   Card,
   CardBody,
@@ -140,16 +141,38 @@ export default function EquiposPage() {
         {isAdmin && (
         <Card>
           <CardBody>
-            <HStack spacing={4} align="center">
-              <Select placeholder="Selecciona torneo" value={torneoSel} onChange={(e) => setTorneoSel(e.target.value)}>
+            <Stack direction={{ base: 'column', xl: 'row' }} spacing={4} align={{ base: 'stretch', xl: 'center' }}>
+              <Select
+                placeholder="Selecciona torneo"
+                value={torneoSel}
+                onChange={(e) => setTorneoSel(e.target.value)}
+                width={{ base: '100%', xl: 'auto' }}
+              >
                 {torneos?.map(t => (
                   <option key={t.id} value={t.id}>{t.nombre}</option>
                 ))}
               </Select>
-              <Input placeholder="Nombre del equipo" value={nuevoEquipo.nombre} onChange={(e) => setNuevoEquipo(v => ({ ...v, nombre: e.target.value }))} />
-              <Input placeholder="Categoría (opcional)" value={nuevoEquipo.categoria} onChange={(e) => setNuevoEquipo(v => ({ ...v, categoria: e.target.value }))} />
-              <Button colorScheme="blue" onClick={() => createEquipo.mutate()} isDisabled={!nuevoEquipo.nombre}>Crear Equipo</Button>
-            </HStack>
+              <Input
+                placeholder="Nombre del equipo"
+                value={nuevoEquipo.nombre}
+                onChange={(e) => setNuevoEquipo(v => ({ ...v, nombre: e.target.value }))}
+              />
+              <Input
+                placeholder="Categoría (opcional)"
+                value={nuevoEquipo.categoria}
+                onChange={(e) => setNuevoEquipo(v => ({ ...v, categoria: e.target.value }))}
+              />
+              <Button
+                colorScheme="blue"
+                onClick={() => createEquipo.mutate()}
+                isDisabled={!nuevoEquipo.nombre}
+                width={{ base: '100%', xl: 'auto' }}
+                whiteSpace="nowrap"
+                flexShrink={0}
+              >
+                Crear Equipo
+              </Button>
+            </Stack>
           </CardBody>
         </Card>
         )}
@@ -184,17 +207,30 @@ export default function EquiposPage() {
 
                         <VStack align="stretch" spacing={2}>
                           {isAdmin && (
-                          <HStack>
-                            <Input placeholder="Buscar niño..." value={equipoSeleccionado === eq.id ? busquedaJugador : ''} onChange={(e) => { setEquipoSeleccionado(eq.id); setBusquedaJugador(e.target.value) }} />
-                            <Select placeholder="Selecciona niño" value={equipoSeleccionado === eq.id ? ninoSeleccionado : ''} onChange={(e) => { setEquipoSeleccionado(eq.id); setNinoSeleccionado(e.target.value) }}>
+                          <Stack direction={{ base: 'column', md: 'row' }} spacing={3} width="full">
+                            <Input
+                              placeholder="Buscar niño..."
+                              value={equipoSeleccionado === eq.id ? busquedaJugador : ''}
+                              onChange={(e) => { setEquipoSeleccionado(eq.id); setBusquedaJugador(e.target.value) }}
+                            />
+                            <Select
+                              placeholder="Selecciona niño"
+                              value={equipoSeleccionado === eq.id ? ninoSeleccionado : ''}
+                              onChange={(e) => { setEquipoSeleccionado(eq.id); setNinoSeleccionado(e.target.value) }}
+                            >
                               {ninosFiltrados.map(n => (
                                 <option key={n.id} value={n.id}>{n.nombre} {n.apellido} • {n.categoria}</option>
                               ))}
                             </Select>
-                            <Button colorScheme="teal" onClick={() => ninoSeleccionado && addJugador.mutate({ equipoId: eq.id, ninoId: ninoSeleccionado })} isDisabled={!ninoSeleccionado}>
+                            <Button
+                              colorScheme="teal"
+                              onClick={() => ninoSeleccionado && addJugador.mutate({ equipoId: eq.id, ninoId: ninoSeleccionado })}
+                              isDisabled={!ninoSeleccionado}
+                              width={{ base: '100%', md: 'auto' }}
+                            >
                               Agregar
                             </Button>
-                          </HStack>
+                          </Stack>
                           )}
                         </VStack>
                       </VStack>
