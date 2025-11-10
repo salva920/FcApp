@@ -1,6 +1,8 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
+import NextImage from 'next/image'
+import logoImg from '../../../public/photo_2025-11-09_17-03-16.jpg'
 import {
   Box,
   Container,
@@ -15,6 +17,7 @@ import {
   InputLeftElement,
   Button,
   useColorModeValue,
+  useColorMode,
   Card,
   CardBody,
   Alert,
@@ -27,9 +30,10 @@ import {
   Tab,
   TabPanel,
   Select,
-  Textarea
+  Textarea,
+  Image
 } from '@chakra-ui/react'
-import { FiMail, FiLock, FiEye, FiEyeOff, FiUser, FiPhone, FiBriefcase } from 'react-icons/fi'
+import { FiMail, FiLock, FiEye, FiEyeOff, FiUser, FiPhone, FiSun, FiMoon } from 'react-icons/fi'
 import Link from 'next/link'
 
 export default function LoginPage() {
@@ -61,12 +65,102 @@ export default function LoginPage() {
   const [registroError, setRegistroError] = useState('')
   const [registroSuccess, setRegistroSuccess] = useState(false)
 
-  const cardBg = useColorModeValue('white', 'gray.800')
-  const borderColor = useColorModeValue('gray.200', 'gray.600')
+  const { colorMode, toggleColorMode } = useColorMode()
   const gradientBg = useColorModeValue(
-    'linear(to-br, blue.50, green.50, yellow.50)',
-    'linear(to-br, gray.800, gray.700, gray.600)'
+    'linear(to-br, rgba(255,255,255,0.85), rgba(255,231,214,0.85))',
+    'linear(to-br, rgba(5,5,5,0.85), rgba(26,0,0,0.85))'
   )
+  const haloGradient = useColorModeValue(
+    'radial(circle at top, rgba(255,99,71,0.25), rgba(0,0,0,0))',
+    'radial(circle at top, rgba(255,79,90,0.45), rgba(0,0,0,0))'
+  )
+  const glassCardBg = useColorModeValue('rgba(255,255,255,0.85)', 'rgba(18,18,18,0.78)')
+  const glassBorderColor = useColorModeValue('rgba(255,255,255,0.6)', 'rgba(255,255,255,0.12)')
+  const decorativeColor = useColorModeValue('rgba(200,200,200,0.4)', 'rgba(255,255,255,0.08)')
+  const bodyTextColor = useColorModeValue('gray.800', 'whiteAlpha.900')
+  const subtitleGradient = useColorModeValue(
+    'linear(to-r, red.500, orange.400)',
+    'linear(to-r, red.400, orange.300)'
+  )
+  const isDark = colorMode === 'dark'
+
+  const inputStyles = useMemo(() => {
+    if (colorMode === 'light') {
+      return {
+        bg: 'white',
+        borderColor: 'gray.200',
+        color: 'gray.800',
+        _placeholder: { color: 'gray.500' },
+        _hover: { borderColor: 'red.300' },
+        _focus: {
+          borderColor: 'red.400',
+          boxShadow: '0 0 0 1px rgba(244,71,71,0.4)'
+        }
+      }
+    }
+    return {
+      bg: 'rgba(255,255,255,0.08)',
+      borderColor: 'whiteAlpha.200',
+      color: 'whiteAlpha.900',
+      _placeholder: { color: 'whiteAlpha.600' },
+      _hover: { borderColor: 'red.400' },
+      _focus: {
+        borderColor: 'red.500',
+        boxShadow: '0 0 0 1px rgba(244,71,71,0.6)'
+      }
+    }
+  }, [colorMode])
+
+  const selectStyles = useMemo(() => {
+    if (colorMode === 'light') {
+      return {
+        bg: 'white',
+        borderColor: 'gray.200',
+        color: 'gray.800',
+        _placeholder: { color: 'gray.500' },
+        _hover: { borderColor: 'red.300' },
+        _focus: { borderColor: 'red.400', boxShadow: '0 0 0 1px rgba(244,71,71,0.4)' }
+      }
+    }
+    return {
+      bg: 'rgba(255,255,255,0.08)',
+      borderColor: 'whiteAlpha.200',
+      color: 'whiteAlpha.900',
+      _hover: { borderColor: 'red.400' },
+      _focus: { borderColor: 'red.500', boxShadow: '0 0 0 1px rgba(244,71,71,0.6)' }
+    }
+  }, [colorMode])
+
+  const textAreaStyles = useMemo(() => {
+    if (colorMode === 'light') {
+      return {
+        bg: 'white',
+        borderColor: 'gray.200',
+        color: 'gray.800',
+        _placeholder: { color: 'gray.500' },
+        _hover: { borderColor: 'red.300' },
+        _focus: { borderColor: 'red.400', boxShadow: '0 0 0 1px rgba(244,71,71,0.4)' }
+      }
+    }
+    return {
+      bg: 'rgba(255,255,255,0.08)',
+      borderColor: 'whiteAlpha.200',
+      color: 'whiteAlpha.900',
+      _placeholder: { color: 'whiteAlpha.600' },
+      _hover: { borderColor: 'red.400' },
+      _focus: { borderColor: 'red.500', boxShadow: '0 0 0 1px rgba(244,71,71,0.6)' }
+    }
+  }, [colorMode])
+
+  const labelColor = useColorModeValue('gray.700', 'whiteAlpha.900')
+  const iconColor = useColorModeValue('gray.400', 'whiteAlpha.600')
+  const toggleColor = useColorModeValue('gray.600', 'yellow.200')
+  const tabInactiveColor = useColorModeValue('gray.500', 'whiteAlpha.700')
+  const tabSelectedColor = useColorModeValue('red.500', 'red.300')
+  const tabBorderColor = useColorModeValue('gray.200', 'whiteAlpha.200')
+  const footerColor = useColorModeValue('gray.500', 'whiteAlpha.600')
+  const buttonGradient = useColorModeValue('linear(to-r, red.500, orange.400)', 'linear(to-r, red.600, orange.400)')
+  const buttonHoverGradient = useColorModeValue('linear(to-r, red.600, orange.500)', 'linear(to-r, red.500, orange.500)')
 
   useEffect(() => {
     setMounted(true)
@@ -199,46 +293,126 @@ export default function LoginPage() {
       position="relative"
       overflow="hidden"
     >
+      {/* Toggle modo */}
+      <Box position="absolute" top={6} right={6}>
+        <IconButton
+          aria-label="Cambiar modo de color"
+          icon={colorMode === 'light' ? <FiMoon /> : <FiSun />}
+          variant="ghost"
+          color={toggleColor}
+          onClick={toggleColorMode}
+          _hover={{ transform: 'scale(1.05)' }}
+          transition="transform 0.2s ease"
+        />
+      </Box>
+
       {/* Elementos decorativos */}
-      <Box position="absolute" top="10%" left="5%" opacity={0.1}>
-        <Text fontSize="6xl" color="green.500" transform="rotate(-15deg)">⚽</Text>
+      <Box position="absolute" top="10%" left="5%" opacity={1}>
+        <Text fontSize="6xl" color={decorativeColor} transform="rotate(-15deg)">⚽</Text>
       </Box>
-      <Box position="absolute" top="20%" right="10%" opacity={0.1}>
-        <Text fontSize="4xl" color="blue.500" transform="rotate(15deg)">🏆</Text>
+      <Box position="absolute" top="20%" right="10%" opacity={1}>
+        <Text fontSize="4xl" color={decorativeColor} transform="rotate(15deg)">🏆</Text>
       </Box>
-      <Box position="absolute" bottom="15%" left="15%" opacity={0.1}>
-        <Text fontSize="5xl" color="yellow.500" transform="rotate(-10deg)">⚽</Text>
+      <Box position="absolute" bottom="15%" left="15%" opacity={1}>
+        <Text fontSize="5xl" color={decorativeColor} transform="rotate(-10deg)">⚽</Text>
       </Box>
 
       <Container maxW="md" py={12}>
         <VStack spacing={8}>
-          <VStack spacing={4} textAlign="center">
-            <Box position="relative">
-              <Text fontSize="6xl" mb={2}>⚽</Text>
-              <Box
-                position="absolute"
-                top="-2"
-                right="-2"
-                w="4"
-                h="4"
-                bg="green.400"
-                borderRadius="full"
+          <VStack spacing={5} textAlign="center" position="relative">
+            <Box
+              position="absolute"
+              top={{ base: '40px', md: '20px' }}
+              left="50%"
+              transform="translateX(-50%)"
+              width={{ base: '220px', md: '260px' }}
+              height={{ base: '220px', md: '260px' }}
+              bgGradient={haloGradient}
+              filter="blur(40px)"
+              zIndex={0}
+            />
+            <Box
+              position="relative"
+              width={{ base: '140px', md: '160px' }}
+              height={{ base: '140px', md: '160px' }}
+              borderRadius="full"
+              bg="black"
+              overflow="hidden"
+              boxShadow="xl"
+              mx="auto"
+              zIndex={1}
+            >
+              <NextImage
+                src={logoImg}
+                alt="Escudo Tigres F.C. Anzoátegui"
+                fill
+                style={{ objectFit: 'contain' }}
+                priority
+                sizes="160px"
               />
             </Box>
-            <Heading size="2xl" color="blue.600" fontWeight="bold">
-              Gestión Football Pro
+            <Heading
+              as="h1"
+              size="lg"
+              fontWeight="700"
+              color={isDark ? 'white' : 'transparent'}
+              bgGradient={!isDark ? subtitleGradient : undefined}
+              bgClip={!isDark ? 'text' : undefined}
+            >
+              Bienvenido a Tigres F.C.
             </Heading>
-            <Text fontSize="lg" color="gray.600" maxW="sm">
-              Accede o regístrate para gestionar la escuela de fútbol
+            <Text
+              fontSize={{ base: 'md', md: 'lg' }}
+              color={isDark ? 'whiteAlpha.900' : 'transparent'}
+              maxW="md"
+              bgGradient={!isDark ? subtitleGradient : undefined}
+              bgClip={!isDark ? 'text' : undefined}
+              fontWeight="semibold"
+            >
+              Plataforma oficial para representantes, profesores y administradores del club Tigres F.C. Anzoátegui.
             </Text>
           </VStack>
 
-          <Card w="full" bg={cardBg} borderColor={borderColor} borderWidth="1px" shadow="xl" borderRadius="xl">
+          <Card
+            w="full"
+            bg={glassCardBg}
+            borderColor={glassBorderColor}
+            borderWidth="1px"
+            shadow="2xl"
+            borderRadius="2xl"
+            backdropFilter="blur(14px)"
+            transition="transform 0.3s ease, box-shadow 0.3s ease"
+            color={bodyTextColor}
+            _hover={{
+              transform: 'translateY(-4px)',
+              boxShadow: '3xl'
+            }}
+          >
             <CardBody p={0}>
-              <Tabs defaultIndex={0} colorScheme="blue">
-                <TabList>
-                  <Tab flex={1} fontWeight="semibold">Iniciar Sesión</Tab>
-                  <Tab flex={1} fontWeight="semibold">Registrarse</Tab>
+              <Tabs defaultIndex={0} colorScheme="red">
+                <TabList borderBottomColor={tabBorderColor}>
+                  <Tab
+                    flex={1}
+                    fontWeight="semibold"
+                    color={tabInactiveColor}
+                    _selected={{
+                      color: tabSelectedColor,
+                      borderColor: 'red.400'
+                    }}
+                  >
+                    Iniciar Sesión
+                  </Tab>
+                  <Tab
+                    flex={1}
+                    fontWeight="semibold"
+                    color={tabInactiveColor}
+                    _selected={{
+                      color: tabSelectedColor,
+                      borderColor: 'red.400'
+                    }}
+                  >
+                    Registrarse
+                  </Tab>
                 </TabList>
 
                 <TabPanels>
@@ -254,12 +428,13 @@ export default function LoginPage() {
                   )}
 
                   <FormControl isRequired>
-                          <FormLabel>Email</FormLabel>
+                          <FormLabel color={labelColor}>Email</FormLabel>
                     <InputGroup>
                       <InputLeftElement>
-                        <FiMail color="gray.400" />
+                        <FiMail color={iconColor} />
                       </InputLeftElement>
                       <Input
+                        {...inputStyles}
                         type="email"
                         name="email"
                               placeholder="tu@email.com"
@@ -271,12 +446,13 @@ export default function LoginPage() {
                   </FormControl>
 
                   <FormControl isRequired>
-                          <FormLabel>Contraseña</FormLabel>
+                          <FormLabel color={labelColor}>Contraseña</FormLabel>
                     <InputGroup>
                       <InputLeftElement>
-                        <FiLock color="gray.400" />
+                        <FiLock color={iconColor} />
                       </InputLeftElement>
                       <Input
+                        {...inputStyles}
                         type={showPassword ? 'text' : 'password'}
                         name="password"
                         placeholder="••••••••"
@@ -290,6 +466,7 @@ export default function LoginPage() {
                           icon={showPassword ? <FiEyeOff /> : <FiEye />}
                           variant="ghost"
                           size="sm"
+                          color={tabInactiveColor}
                           onClick={() => setShowPassword(!showPassword)}
                         />
                       </InputRightElement>
@@ -298,11 +475,21 @@ export default function LoginPage() {
 
                   <Button
                     type="submit"
-                    colorScheme="blue"
                     size="lg"
                     width="full"
                     isLoading={isLoading}
                     loadingText="Iniciando sesión..."
+                    bgGradient={buttonGradient}
+                    color="white"
+                    _hover={{
+                      bgGradient: buttonHoverGradient,
+                      transform: 'translateY(-1px)',
+                      boxShadow: 'lg'
+                    }}
+                    _active={{
+                      transform: 'translateY(0)'
+                    }}
+                    transition="all 0.2s ease"
                   >
                     Iniciar Sesión
                   </Button>
@@ -329,8 +516,9 @@ export default function LoginPage() {
                         )}
 
                         <FormControl isRequired>
-                          <FormLabel>Tipo de Usuario</FormLabel>
+                          <FormLabel color={labelColor}>Tipo de Usuario</FormLabel>
                           <Select
+                            {...selectStyles}
                             name="rol"
                             value={registroData.rol}
                             onChange={handleRegistroChange}
@@ -343,12 +531,13 @@ export default function LoginPage() {
                         </FormControl>
 
                         <FormControl isRequired>
-                          <FormLabel>Nombre Completo</FormLabel>
+                          <FormLabel color={labelColor}>Nombre Completo</FormLabel>
                           <InputGroup>
                             <InputLeftElement>
-                              <FiUser color="gray.400" />
+                              <FiUser color={iconColor} />
                             </InputLeftElement>
                             <Input
+                              {...inputStyles}
                               type="text"
                               name="nombre"
                               placeholder="Juan Pérez"
@@ -360,12 +549,13 @@ export default function LoginPage() {
                         </FormControl>
 
                         <FormControl isRequired>
-                          <FormLabel>Email</FormLabel>
+                          <FormLabel color={labelColor}>Email</FormLabel>
                           <InputGroup>
                             <InputLeftElement>
-                              <FiMail color="gray.400" />
+                              <FiMail color={iconColor} />
                             </InputLeftElement>
                             <Input
+                              {...inputStyles}
                               type="email"
                               name="email"
                               placeholder="tu@email.com"
@@ -378,8 +568,9 @@ export default function LoginPage() {
 
                         <HStack spacing={4}>
                           <FormControl isRequired>
-                            <FormLabel>Cédula</FormLabel>
+                            <FormLabel color={labelColor}>Cédula</FormLabel>
                             <Input
+                              {...inputStyles}
                               type="text"
                               name="cedula"
                               placeholder="12345678"
@@ -390,12 +581,13 @@ export default function LoginPage() {
                           </FormControl>
 
                           <FormControl isRequired>
-                            <FormLabel>Teléfono</FormLabel>
+                            <FormLabel color={labelColor}>Teléfono</FormLabel>
                             <InputGroup>
                               <InputLeftElement>
-                                <FiPhone color="gray.400" />
+                                <FiPhone color={iconColor} />
                               </InputLeftElement>
                               <Input
+                                {...inputStyles}
                                 type="tel"
                                 name="telefono"
                                 placeholder="04121234567"
@@ -409,8 +601,9 @@ export default function LoginPage() {
 
                         {registroData.rol === 'profesor' && (
                           <FormControl>
-                            <FormLabel>Especialidad</FormLabel>
+                            <FormLabel color={labelColor}>Especialidad</FormLabel>
                             <Input
+                              {...inputStyles}
                               type="text"
                               name="especialidad"
                               placeholder="Portero, Defensa, etc."
@@ -423,8 +616,9 @@ export default function LoginPage() {
 
                         {registroData.rol === 'representante' && (
                           <FormControl>
-                            <FormLabel>Dirección</FormLabel>
+                            <FormLabel color={labelColor}>Dirección</FormLabel>
                             <Textarea
+                              {...textAreaStyles}
                               name="direccion"
                               placeholder="Calle, Ciudad..."
                               value={registroData.direccion}
@@ -436,12 +630,13 @@ export default function LoginPage() {
                         )}
 
                         <FormControl isRequired>
-                          <FormLabel>Contraseña</FormLabel>
+                          <FormLabel color={labelColor}>Contraseña</FormLabel>
                           <InputGroup>
                             <InputLeftElement>
-                              <FiLock color="gray.400" />
+                              <FiLock color={iconColor} />
                             </InputLeftElement>
                             <Input
+                              {...inputStyles}
                               type={showRegistroPassword ? 'text' : 'password'}
                               name="password"
                               placeholder="••••••••"
@@ -455,6 +650,7 @@ export default function LoginPage() {
                                 icon={showRegistroPassword ? <FiEyeOff /> : <FiEye />}
                                 variant="ghost"
                                 size="sm"
+                                color={tabInactiveColor}
                                 onClick={() => setShowRegistroPassword(!showRegistroPassword)}
                               />
                             </InputRightElement>
@@ -462,12 +658,13 @@ export default function LoginPage() {
                         </FormControl>
 
                         <FormControl isRequired>
-                          <FormLabel>Confirmar Contraseña</FormLabel>
+                          <FormLabel color={labelColor}>Confirmar Contraseña</FormLabel>
                           <InputGroup>
                             <InputLeftElement>
-                              <FiLock color="gray.400" />
+                              <FiLock color={iconColor} />
                             </InputLeftElement>
                             <Input
+                              {...inputStyles}
                               type={showConfirmPassword ? 'text' : 'password'}
                               name="confirmPassword"
                               placeholder="••••••••"
@@ -481,6 +678,7 @@ export default function LoginPage() {
                                 icon={showConfirmPassword ? <FiEyeOff /> : <FiEye />}
                                 variant="ghost"
                                 size="sm"
+                                color={tabInactiveColor}
                                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                               />
                             </InputRightElement>
@@ -489,11 +687,21 @@ export default function LoginPage() {
 
                         <Button
                           type="submit"
-                          colorScheme="green"
                           size="lg"
                           width="full"
                           isLoading={isLoadingRegistro}
                           loadingText="Registrando..."
+                          bgGradient={buttonGradient}
+                          color="white"
+                          _hover={{
+                            bgGradient: buttonHoverGradient,
+                            transform: 'translateY(-1px)',
+                            boxShadow: 'lg'
+                          }}
+                          _active={{
+                            transform: 'translateY(0)'
+                          }}
+                          transition="all 0.2s ease"
                         >
                           Registrarse
                         </Button>
@@ -506,8 +714,8 @@ export default function LoginPage() {
           </Card>
 
           <VStack spacing={2} textAlign="center">
-            <Text fontSize="sm" color="gray.500">
-              © 2024 Gestión Football Pro
+            <Text fontSize="sm" color={footerColor}>
+              © 2025 Gestión Football Pro
             </Text>
           </VStack>
         </VStack>
