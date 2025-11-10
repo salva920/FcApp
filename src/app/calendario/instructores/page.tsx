@@ -30,7 +30,8 @@ import {
   Td,
   Badge,
   Flex,
-  IconButton
+  IconButton,
+  Stack
 } from '@chakra-ui/react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { FiPlus, FiEdit, FiTrash2, FiUser } from 'react-icons/fi'
@@ -123,12 +124,23 @@ export default function InstructoresPage() {
   return (
     <Container maxW="container.xl" py={8}>
       <VStack spacing={8} align="stretch">
-        <Flex justify="space-between" align="center">
+        <Stack
+          direction={{ base: 'column', md: 'row' }}
+          spacing={4}
+          justify="space-between"
+          align={{ base: 'stretch', md: 'center' }}
+        >
           <Heading size="xl">👨‍🏫 Gestión de Instructores</Heading>
-          <HStack spacing={4}>
+          <Stack
+            direction={{ base: 'column', sm: 'row' }}
+            spacing={3}
+            justify="flex-end"
+            width={{ base: '100%', md: 'auto' }}
+          >
             <Button
               variant="outline"
               onClick={() => window.location.href = '/calendario'}
+              width={{ base: '100%', sm: 'auto' }}
             >
               ← Volver al Calendario
             </Button>
@@ -139,51 +151,54 @@ export default function InstructoresPage() {
                 resetForm()
                 onOpen()
               }}
+              width={{ base: '100%', sm: 'auto' }}
             >
               Nuevo Instructor
             </Button>
-          </HStack>
-        </Flex>
+          </Stack>
+        </Stack>
 
         <Card>
           <CardBody>
-            <Table variant="simple" size="sm">
-              <Thead>
-                <Tr>
-                  <Th>Nombre</Th>
-                  <Th>Cédula</Th>
-                  <Th>Email</Th>
-                  <Th>Teléfono</Th>
-                  <Th>Especialidad</Th>
-                  <Th>Actividades</Th>
-                  <Th>Acciones</Th>
-                </Tr>
-              </Thead>
-              <Tbody>
-                {instructores?.map((instructor) => (
-                  <Tr key={instructor.id}>
-                    <Td fontWeight="bold">{instructor.nombre}</Td>
-                    <Td>{instructor.cedula}</Td>
-                    <Td>{instructor.email}</Td>
-                    <Td>{instructor.telefono}</Td>
-                    <Td>{instructor.especialidad || '-'}</Td>
-                    <Td>
-                      <Badge colorScheme="blue">{instructor._count?.actividades || 0}</Badge>
-                    </Td>
-                    <Td>
-                      <IconButton
-                        aria-label="Editar"
-                        icon={<FiEdit />}
-                        size="sm"
-                        variant="ghost"
-                        colorScheme="blue"
-                        onClick={() => handleEdit(instructor)}
-                      />
-                    </Td>
+            <Box overflowX="auto">
+              <Table variant="simple" size="sm" minW="760px">
+                <Thead>
+                  <Tr>
+                    <Th>Nombre</Th>
+                    <Th>Cédula</Th>
+                    <Th>Email</Th>
+                    <Th>Teléfono</Th>
+                    <Th>Especialidad</Th>
+                    <Th>Actividades</Th>
+                    <Th>Acciones</Th>
                   </Tr>
-                ))}
-              </Tbody>
-            </Table>
+                </Thead>
+                <Tbody>
+                  {instructores?.map((instructor) => (
+                    <Tr key={instructor.id}>
+                      <Td fontWeight="bold">{instructor.nombre}</Td>
+                      <Td>{instructor.cedula}</Td>
+                      <Td>{instructor.email}</Td>
+                      <Td>{instructor.telefono}</Td>
+                      <Td>{instructor.especialidad || '-'}</Td>
+                      <Td>
+                        <Badge colorScheme="blue">{instructor._count?.actividades || 0}</Badge>
+                      </Td>
+                      <Td>
+                        <IconButton
+                          aria-label="Editar"
+                          icon={<FiEdit />}
+                          size="sm"
+                          variant="ghost"
+                          colorScheme="blue"
+                          onClick={() => handleEdit(instructor)}
+                        />
+                      </Td>
+                    </Tr>
+                  ))}
+                </Tbody>
+              </Table>
+            </Box>
           </CardBody>
         </Card>
       </VStack>
@@ -240,14 +255,14 @@ export default function InstructoresPage() {
                   />
                 </FormControl>
 
-                <HStack spacing={4} width="full">
-                  <Button type="button" onClick={onClose} flex={1}>
+                <Stack direction={{ base: 'column', md: 'row' }} spacing={4} width="full">
+                  <Button type="button" onClick={onClose} flex={1} width={{ base: '100%', md: 'auto' }}>
                     Cancelar
                   </Button>
-                  <Button type="submit" colorScheme="blue" flex={1}>
+                  <Button type="submit" colorScheme="blue" flex={1} width={{ base: '100%', md: 'auto' }}>
                     Guardar
                   </Button>
-                </HStack>
+                </Stack>
               </VStack>
             </ModalBody>
           </form>
