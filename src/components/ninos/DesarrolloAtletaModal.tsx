@@ -10,6 +10,7 @@ import {
   ModalCloseButton,
   VStack,
   HStack,
+  Stack,
   Box,
   Text,
   Button,
@@ -49,7 +50,8 @@ import {
   Checkbox,
   CheckboxGroup,
   Alert,
-  AlertIcon
+  AlertIcon,
+  useColorModeValue
 } from '@chakra-ui/react'
 import { FiSave, FiTrendingUp, FiTarget, FiActivity, FiAward, FiDownload, FiBarChart2, FiRefreshCw } from 'react-icons/fi'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -570,29 +572,76 @@ export function DesarrolloAtletaModal({ isOpen, onClose, nino, readOnly = false 
     evaluaciones[0].psiTrabEquipo
   ].filter(Boolean)) : '0.0'
 
-  const chartOptions = {
+  const legendColor = useColorModeValue('#2D3748', '#E2E8F0')
+  const secondaryTextColor = useColorModeValue('#4A5568', '#A0AEC0')
+  const axisGridColor = useColorModeValue('rgba(45, 55, 72, 0.2)', 'rgba(226, 232, 240, 0.2)')
+  const pointLabelColor = useColorModeValue('#1A202C', '#F7FAFC')
+  const tooltipBg = useColorModeValue('rgba(0, 0, 0, 0.8)', 'rgba(255, 255, 255, 0.92)')
+  const tooltipTitleColor = useColorModeValue('#FFFFFF', '#1A202C')
+  const tooltipBodyColor = useColorModeValue('#FFFFFF', '#1A202C')
+
+  const chartOptions = useMemo(() => ({
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
       legend: {
         position: 'top' as const,
+        labels: {
+          color: legendColor,
+          font: {
+            size: 14,
+            weight: 'bold' as const
+          },
+          padding: 16,
+          usePointStyle: true,
+          pointStyle: 'circle'
+        }
       },
       title: {
         display: false,
+        color: legendColor
       },
+      tooltip: {
+        enabled: true,
+        backgroundColor: tooltipBg,
+        titleColor: tooltipTitleColor,
+        bodyColor: tooltipBodyColor,
+        titleFont: {
+          size: 14,
+          weight: 'bold' as const
+        },
+        bodyFont: {
+          size: 13
+        },
+        padding: 12,
+        cornerRadius: 8,
+        displayColors: true
+      }
     },
     scales: {
+      x: {
+        ticks: {
+          color: secondaryTextColor
+        },
+        grid: {
+          color: axisGridColor
+        }
+      },
       y: {
         min: 0,
         max: 10,
         ticks: {
-          stepSize: 1
+          stepSize: 1,
+          color: secondaryTextColor
+        },
+        grid: {
+          color: axisGridColor
         }
       }
     }
-  }
+  }), [legendColor, secondaryTextColor, axisGridColor, tooltipBg, tooltipTitleColor, tooltipBodyColor])
 
-  const radarOptions = {
+  const radarOptions = useMemo(() => ({
     responsive: true,
     maintainAspectRatio: false,
     scales: {
@@ -603,22 +652,22 @@ export function DesarrolloAtletaModal({ isOpen, onClose, nino, readOnly = false 
         ticks: {
           stepSize: 2,
           backdropColor: 'transparent',
-          color: '#2D3748',
+          color: secondaryTextColor,
           font: {
             size: 14,
             weight: 'bold' as const
           }
         },
         grid: {
-          color: 'rgba(45, 55, 72, 0.2)',
+          color: axisGridColor,
           lineWidth: 2
         },
         angleLines: {
-          color: 'rgba(45, 55, 72, 0.2)',
+          color: axisGridColor,
           lineWidth: 2
         },
         pointLabels: {
-          color: '#1A202C',
+          color: pointLabelColor,
           font: {
             size: 16,
             weight: 'bold' as const,
@@ -633,7 +682,7 @@ export function DesarrolloAtletaModal({ isOpen, onClose, nino, readOnly = false 
         display: true,
         position: 'top' as const,
         labels: {
-          color: '#2D3748',
+          color: legendColor,
           font: {
             size: 14,
             weight: 'bold' as const
@@ -645,9 +694,9 @@ export function DesarrolloAtletaModal({ isOpen, onClose, nino, readOnly = false 
       },
       tooltip: {
         enabled: true,
-        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-        titleColor: '#fff',
-        bodyColor: '#fff',
+        backgroundColor: tooltipBg,
+        titleColor: tooltipTitleColor,
+        bodyColor: tooltipBodyColor,
         titleFont: {
           size: 14,
           weight: 'bold' as const
@@ -660,7 +709,7 @@ export function DesarrolloAtletaModal({ isOpen, onClose, nino, readOnly = false 
         displayColors: true,
         callbacks: {
           label: function(context: any) {
-            return context.dataset.label + ': ' + context.parsed.r.toFixed(1) + '/10';
+            return `${context.dataset.label}: ${context.parsed.r.toFixed(1)}/10`
           }
         }
       }
@@ -677,7 +726,7 @@ export function DesarrolloAtletaModal({ isOpen, onClose, nino, readOnly = false 
         hoverBorderWidth: 4
       }
     }
-  }
+  }), [legendColor, secondaryTextColor, axisGridColor, pointLabelColor, tooltipBg, tooltipTitleColor, tooltipBodyColor])
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="6xl">
@@ -685,8 +734,14 @@ export function DesarrolloAtletaModal({ isOpen, onClose, nino, readOnly = false 
       <ModalContent maxH="90vh" overflowY="auto">
         <ModalHeader>
           <VStack align="start" spacing={1}>
-            <HStack justify="space-between" width="full">
-              <HStack>
+            <Stack
+              direction={{ base: 'column', md: 'row' }}
+              spacing={{ base: 3, md: 4 }}
+              width="full"
+              align={{ base: 'flex-start', md: 'center' }}
+              justify="space-between"
+            >
+              <HStack spacing={2}>
                 <FiActivity size={24} />
                 <Text>{readOnly ? 'Progreso del Atleta' : 'Desarrollo del Atleta'}</Text>
               </HStack>
@@ -696,10 +751,11 @@ export function DesarrolloAtletaModal({ isOpen, onClose, nino, readOnly = false 
                 size="sm"
                 onClick={exportToPDF}
                 isDisabled={!evaluaciones || evaluaciones.length === 0}
+                alignSelf={{ base: 'stretch', md: 'auto' }}
               >
                 Exportar PDF
               </Button>
-            </HStack>
+            </Stack>
             <Text fontSize="lg" fontWeight="bold" color="blue.600">
               {nino.nombre} {nino.apellido}
             </Text>
@@ -713,7 +769,12 @@ export function DesarrolloAtletaModal({ isOpen, onClose, nino, readOnly = false 
         <ModalCloseButton />
         <ModalBody pb={6}>
           <Tabs colorScheme="blue">
-            <TabList overflowX="auto" overflowY="hidden">
+            <TabList
+              overflowX="auto"
+              overflowY="hidden"
+              flexWrap={{ base: 'wrap', md: 'nowrap' }}
+              gap={{ base: 2, md: 0 }}
+            >
               <Tab><FiAward /> Resumen</Tab>
               <Tab><FiBarChart2 /> Gráficos</Tab>
               <Tab><FiRefreshCw /> Comparar</Tab>
@@ -730,7 +791,14 @@ export function DesarrolloAtletaModal({ isOpen, onClose, nino, readOnly = false 
                   
                   {evaluaciones && evaluaciones.length > 0 ? (
                     <>
-                      <Grid templateColumns="repeat(4, 1fr)" gap={4}>
+                      <Grid
+                        templateColumns={{
+                          base: 'repeat(1, 1fr)',
+                          md: 'repeat(2, 1fr)',
+                          xl: 'repeat(4, 1fr)'
+                        }}
+                        gap={4}
+                      >
                         <Stat>
                           <StatLabel>Técnico</StatLabel>
                           <StatNumber color="blue.500">{promedioTecnico}</StatNumber>
@@ -784,7 +852,15 @@ export function DesarrolloAtletaModal({ isOpen, onClose, nino, readOnly = false 
 
                       <Box>
                         <Heading size="sm" mb={2}>Perfil del Jugador</Heading>
-                        <Grid templateColumns="repeat(3, 1fr)" gap={4} mb={4}>
+                        <Grid
+                          templateColumns={{
+                            base: 'repeat(1, 1fr)',
+                            md: 'repeat(2, 1fr)',
+                            xl: 'repeat(3, 1fr)'
+                          }}
+                          gap={4}
+                          mb={4}
+                        >
                           <Box>
                             <Text fontSize="sm" color="gray.600">Posición Principal</Text>
                             <Text fontWeight="bold">{evaluaciones[0].posicionPrincipal || '-'}</Text>
@@ -805,7 +881,14 @@ export function DesarrolloAtletaModal({ isOpen, onClose, nino, readOnly = false 
                         {(evaluaciones[0].estatura || evaluaciones[0].peso || evaluaciones[0].talla || evaluaciones[0].tallaCalzado) && (
                           <>
                             <Heading size="sm" mb={2}>Medidas Físicas</Heading>
-                            <Grid templateColumns="repeat(4, 1fr)" gap={4}>
+                            <Grid
+                              templateColumns={{
+                                base: 'repeat(1, 1fr)',
+                                md: 'repeat(2, 1fr)',
+                                xl: 'repeat(4, 1fr)'
+                              }}
+                              gap={4}
+                            >
                               {evaluaciones[0].estatura && (
                                 <Box>
                                   <Text fontSize="sm" color="gray.600">Estatura</Text>
@@ -862,7 +945,10 @@ export function DesarrolloAtletaModal({ isOpen, onClose, nino, readOnly = false 
                           <Heading size="sm" mb={4}>Radar de Competencias</Heading>
                           <Card shadow="lg" borderWidth="1px">
                             <CardBody>
-                              <Box height="450px" p={4}>
+                              <Box
+                                height={{ base: '260px', md: '380px', xl: '450px' }}
+                                p={{ base: 2, md: 4 }}
+                              >
                                 <Radar data={radarData} options={radarOptions} />
                               </Box>
                             </CardBody>
@@ -893,7 +979,7 @@ export function DesarrolloAtletaModal({ isOpen, onClose, nino, readOnly = false 
                     <>
                       <Box>
                         <Heading size="sm" mb={4}>Evolución Temporal de Competencias</Heading>
-                        <Box height="400px">
+                        <Box height={{ base: '260px', md: '380px', xl: '420px' }}>
                           <Line data={chartData} options={chartOptions} />
                         </Box>
                       </Box>
@@ -902,7 +988,13 @@ export function DesarrolloAtletaModal({ isOpen, onClose, nino, readOnly = false 
 
                       <Box>
                         <Heading size="sm" mb={4}>Análisis de Progreso</Heading>
-                        <Grid templateColumns="repeat(2, 1fr)" gap={4}>
+                        <Grid
+                          templateColumns={{
+                            base: 'repeat(1, 1fr)',
+                            lg: 'repeat(2, 1fr)'
+                          }}
+                          gap={4}
+                        >
                           {evaluaciones && evaluaciones.length >= 2 && (
                             <>
                               {(() => {
@@ -923,7 +1015,7 @@ export function DesarrolloAtletaModal({ isOpen, onClose, nino, readOnly = false 
                                 
                                 return (
                                   <>
-                                    <Card>
+                                  <Card>
                                       <CardBody>
                                         <Stat>
                                           <StatLabel>Progreso Técnico</StatLabel>
@@ -997,7 +1089,13 @@ export function DesarrolloAtletaModal({ isOpen, onClose, nino, readOnly = false 
                   
                   {evaluaciones && evaluaciones.length >= 2 ? (
                     <>
-                      <Grid templateColumns="repeat(2, 1fr)" gap={4}>
+                      <Grid
+                        templateColumns={{
+                          base: 'repeat(1, 1fr)',
+                          md: 'repeat(2, 1fr)'
+                        }}
+                        gap={4}
+                      >
                         <FormControl>
                           <FormLabel>Primera Evaluación</FormLabel>
                           <Select
@@ -1035,7 +1133,10 @@ export function DesarrolloAtletaModal({ isOpen, onClose, nino, readOnly = false 
                             <Heading size="sm" mb={4}>Comparación Visual</Heading>
                             <Card shadow="lg" borderWidth="1px">
                               <CardBody>
-                                <Box height="500px" p={4}>
+                                <Box
+                                  height={{ base: '280px', md: '420px', xl: '500px' }}
+                                  p={{ base: 2, md: 4 }}
+                                >
                                   <Radar data={compareData} options={radarOptions} />
                                 </Box>
                               </CardBody>
@@ -1065,58 +1166,60 @@ export function DesarrolloAtletaModal({ isOpen, onClose, nino, readOnly = false 
                                             parseFloat(calcularPromedio([eva1.psiConcentracion, eva1.psiLiderazgo, eva1.psiDisciplina, eva1.psiMotivacion, eva1.psiTrabEquipo].filter(Boolean)))
                               
                               return (
-                                <Table variant="simple">
-                                  <Thead>
-                                    <Tr>
-                                      <Th>Competencia</Th>
-                                      <Th>Evaluación 1</Th>
-                                      <Th>Evaluación 2</Th>
-                                      <Th>Diferencia</Th>
-                                    </Tr>
-                                  </Thead>
-                                  <Tbody>
-                                    <Tr>
-                                      <Td fontWeight="bold">Técnico</Td>
-                                      <Td>{calcularPromedio([eva1.tecControl, eva1.tecPase, eva1.tecTiro, eva1.tecRegate, eva1.tecCabeceo].filter(Boolean))}</Td>
-                                      <Td>{calcularPromedio([eva2.tecControl, eva2.tecPase, eva2.tecTiro, eva2.tecRegate, eva2.tecCabeceo].filter(Boolean))}</Td>
-                                      <Td>
-                                        <Badge colorScheme={difTec >= 0 ? 'green' : 'red'}>
-                                          {difTec >= 0 ? '+' : ''}{difTec.toFixed(1)}
-                                        </Badge>
-                                      </Td>
-                                    </Tr>
-                                    <Tr>
-                                      <Td fontWeight="bold">Táctico</Td>
-                                      <Td>{calcularPromedio([eva1.tacPosicionamiento, eva1.tacLectura, eva1.tacMarcaje, eva1.tacCobertura, eva1.tacVision].filter(Boolean))}</Td>
-                                      <Td>{calcularPromedio([eva2.tacPosicionamiento, eva2.tacLectura, eva2.tacMarcaje, eva2.tacCobertura, eva2.tacVision].filter(Boolean))}</Td>
-                                      <Td>
-                                        <Badge colorScheme={difTac >= 0 ? 'green' : 'red'}>
-                                          {difTac >= 0 ? '+' : ''}{difTac.toFixed(1)}
-                                        </Badge>
-                                      </Td>
-                                    </Tr>
-                                    <Tr>
-                                      <Td fontWeight="bold">Físico</Td>
-                                      <Td>{calcularPromedio([eva1.fisVelocidad, eva1.fisResistencia, eva1.fisFuerza, eva1.fisAgilidad, eva1.fisFlexibilidad].filter(Boolean))}</Td>
-                                      <Td>{calcularPromedio([eva2.fisVelocidad, eva2.fisResistencia, eva2.fisFuerza, eva2.fisAgilidad, eva2.fisFlexibilidad].filter(Boolean))}</Td>
-                                      <Td>
-                                        <Badge colorScheme={difFis >= 0 ? 'green' : 'red'}>
-                                          {difFis >= 0 ? '+' : ''}{difFis.toFixed(1)}
-                                        </Badge>
-                                      </Td>
-                                    </Tr>
-                                    <Tr>
-                                      <Td fontWeight="bold">Psicológico</Td>
-                                      <Td>{calcularPromedio([eva1.psiConcentracion, eva1.psiLiderazgo, eva1.psiDisciplina, eva1.psiMotivacion, eva1.psiTrabEquipo].filter(Boolean))}</Td>
-                                      <Td>{calcularPromedio([eva2.psiConcentracion, eva2.psiLiderazgo, eva2.psiDisciplina, eva2.psiMotivacion, eva2.psiTrabEquipo].filter(Boolean))}</Td>
-                                      <Td>
-                                        <Badge colorScheme={difPsi >= 0 ? 'green' : 'red'}>
-                                          {difPsi >= 0 ? '+' : ''}{difPsi.toFixed(1)}
-                                        </Badge>
-                                      </Td>
-                                    </Tr>
-                                  </Tbody>
-                                </Table>
+                                <Box overflowX="auto">
+                                  <Table variant="simple">
+                                    <Thead>
+                                      <Tr>
+                                        <Th>Competencia</Th>
+                                        <Th>Evaluación 1</Th>
+                                        <Th>Evaluación 2</Th>
+                                        <Th>Diferencia</Th>
+                                      </Tr>
+                                    </Thead>
+                                    <Tbody>
+                                      <Tr>
+                                        <Td fontWeight="bold">Técnico</Td>
+                                        <Td>{calcularPromedio([eva1.tecControl, eva1.tecPase, eva1.tecTiro, eva1.tecRegate, eva1.tecCabeceo].filter(Boolean))}</Td>
+                                        <Td>{calcularPromedio([eva2.tecControl, eva2.tecPase, eva2.tecTiro, eva2.tecRegate, eva2.tecCabeceo].filter(Boolean))}</Td>
+                                        <Td>
+                                          <Badge colorScheme={difTec >= 0 ? 'green' : 'red'}>
+                                            {difTec >= 0 ? '+' : ''}{difTec.toFixed(1)}
+                                          </Badge>
+                                        </Td>
+                                      </Tr>
+                                      <Tr>
+                                        <Td fontWeight="bold">Táctico</Td>
+                                        <Td>{calcularPromedio([eva1.tacPosicionamiento, eva1.tacLectura, eva1.tacMarcaje, eva1.tacCobertura, eva1.tacVision].filter(Boolean))}</Td>
+                                        <Td>{calcularPromedio([eva2.tacPosicionamiento, eva2.tacLectura, eva2.tacMarcaje, eva2.tacCobertura, eva2.tacVision].filter(Boolean))}</Td>
+                                        <Td>
+                                          <Badge colorScheme={difTac >= 0 ? 'green' : 'red'}>
+                                            {difTac >= 0 ? '+' : ''}{difTac.toFixed(1)}
+                                          </Badge>
+                                        </Td>
+                                      </Tr>
+                                      <Tr>
+                                        <Td fontWeight="bold">Físico</Td>
+                                        <Td>{calcularPromedio([eva1.fisVelocidad, eva1.fisResistencia, eva1.fisFuerza, eva1.fisAgilidad, eva1.fisFlexibilidad].filter(Boolean))}</Td>
+                                        <Td>{calcularPromedio([eva2.fisVelocidad, eva2.fisResistencia, eva2.fisFuerza, eva2.fisAgilidad, eva2.fisFlexibilidad].filter(Boolean))}</Td>
+                                        <Td>
+                                          <Badge colorScheme={difFis >= 0 ? 'green' : 'red'}>
+                                            {difFis >= 0 ? '+' : ''}{difFis.toFixed(1)}
+                                          </Badge>
+                                        </Td>
+                                      </Tr>
+                                      <Tr>
+                                        <Td fontWeight="bold">Psicológico</Td>
+                                        <Td>{calcularPromedio([eva1.psiConcentracion, eva1.psiLiderazgo, eva1.psiDisciplina, eva1.psiMotivacion, eva1.psiTrabEquipo].filter(Boolean))}</Td>
+                                        <Td>{calcularPromedio([eva2.psiConcentracion, eva2.psiLiderazgo, eva2.psiDisciplina, eva2.psiMotivacion, eva2.psiTrabEquipo].filter(Boolean))}</Td>
+                                        <Td>
+                                          <Badge colorScheme={difPsi >= 0 ? 'green' : 'red'}>
+                                            {difPsi >= 0 ? '+' : ''}{difPsi.toFixed(1)}
+                                          </Badge>
+                                        </Td>
+                                      </Tr>
+                                    </Tbody>
+                                  </Table>
+                                </Box>
                               )
                             })()}
                           </Box>
@@ -1146,7 +1249,13 @@ export function DesarrolloAtletaModal({ isOpen, onClose, nino, readOnly = false 
                   {/* Perfil del Jugador */}
                   <Box>
                     <Heading size="md" mb={4}>Perfil del Jugador</Heading>
-                    <Grid templateColumns="repeat(2, 1fr)" gap={4}>
+                    <Grid
+                      templateColumns={{
+                        base: 'repeat(1, 1fr)',
+                        md: 'repeat(2, 1fr)'
+                      }}
+                      gap={4}
+                    >
                       <FormControl>
                         <FormLabel>Posición Principal</FormLabel>
                         <Select
@@ -1184,7 +1293,14 @@ export function DesarrolloAtletaModal({ isOpen, onClose, nino, readOnly = false 
                     {/* Medidas Físicas */}
                     <Divider />
                     <Heading size="sm" mb={4}>Medidas Físicas</Heading>
-                    <Grid templateColumns="repeat(4, 1fr)" gap={4}>
+                    <Grid
+                      templateColumns={{
+                        base: 'repeat(1, 1fr)',
+                        md: 'repeat(2, 1fr)',
+                        xl: 'repeat(4, 1fr)'
+                      }}
+                      gap={4}
+                    >
                       <FormControl>
                         <FormLabel>Estatura (cm)</FormLabel>
                         <Input
@@ -1263,7 +1379,11 @@ export function DesarrolloAtletaModal({ isOpen, onClose, nino, readOnly = false 
                       ].map((item) => (
                         <FormControl key={item.key}>
                           <FormLabel>{item.label}</FormLabel>
-                          <HStack spacing={4}>
+                          <Stack
+                            direction={{ base: 'column', sm: 'row' }}
+                            spacing={4}
+                            align={{ base: 'stretch', sm: 'center' }}
+                          >
                             <Slider
                               value={formData[item.key] as number}
                               onChange={(val) => setFormData({ ...formData, [item.key]: val })}
@@ -1288,7 +1408,7 @@ export function DesarrolloAtletaModal({ isOpen, onClose, nino, readOnly = false 
                             >
                               {formData[item.key]}/10
                             </Badge>
-                          </HStack>
+                          </Stack>
                         </FormControl>
                       ))}
                     </VStack>
@@ -1309,7 +1429,11 @@ export function DesarrolloAtletaModal({ isOpen, onClose, nino, readOnly = false 
                       ].map((item) => (
                         <FormControl key={item.key}>
                           <FormLabel>{item.label}</FormLabel>
-                          <HStack spacing={4}>
+                          <Stack
+                            direction={{ base: 'column', sm: 'row' }}
+                            spacing={4}
+                            align={{ base: 'stretch', sm: 'center' }}
+                          >
                             <Slider
                               value={formData[item.key] as number}
                               onChange={(val) => setFormData({ ...formData, [item.key]: val })}
@@ -1334,7 +1458,7 @@ export function DesarrolloAtletaModal({ isOpen, onClose, nino, readOnly = false 
                             >
                               {formData[item.key]}/10
                             </Badge>
-                          </HStack>
+                          </Stack>
                         </FormControl>
                       ))}
                     </VStack>
@@ -1355,7 +1479,11 @@ export function DesarrolloAtletaModal({ isOpen, onClose, nino, readOnly = false 
                       ].map((item) => (
                         <FormControl key={item.key}>
                           <FormLabel>{item.label}</FormLabel>
-                          <HStack spacing={4}>
+                          <Stack
+                            direction={{ base: 'column', sm: 'row' }}
+                            spacing={4}
+                            align={{ base: 'stretch', sm: 'center' }}
+                          >
                             <Slider
                               value={formData[item.key] as number}
                               onChange={(val) => setFormData({ ...formData, [item.key]: val })}
@@ -1380,7 +1508,7 @@ export function DesarrolloAtletaModal({ isOpen, onClose, nino, readOnly = false 
                             >
                               {formData[item.key]}/10
                             </Badge>
-                          </HStack>
+                          </Stack>
                         </FormControl>
                       ))}
                     </VStack>
@@ -1401,7 +1529,11 @@ export function DesarrolloAtletaModal({ isOpen, onClose, nino, readOnly = false 
                       ].map((item) => (
                         <FormControl key={item.key}>
                           <FormLabel>{item.label}</FormLabel>
-                          <HStack spacing={4}>
+                          <Stack
+                            direction={{ base: 'column', sm: 'row' }}
+                            spacing={4}
+                            align={{ base: 'stretch', sm: 'center' }}
+                          >
                             <Slider
                               value={formData[item.key] as number}
                               onChange={(val) => setFormData({ ...formData, [item.key]: val })}
@@ -1426,7 +1558,7 @@ export function DesarrolloAtletaModal({ isOpen, onClose, nino, readOnly = false 
                             >
                               {formData[item.key]}/10
                             </Badge>
-                          </HStack>
+                          </Stack>
                         </FormControl>
                       ))}
                     </VStack>
@@ -1573,45 +1705,47 @@ export function DesarrolloAtletaModal({ isOpen, onClose, nino, readOnly = false 
                   <Heading size="md">Historial de Evaluaciones</Heading>
                   
                   {evaluaciones && evaluaciones.length > 0 ? (
-                    <Table variant="simple" size="sm">
-                      <Thead>
-                        <Tr>
-                          <Th>Fecha</Th>
-                          <Th>Técnico</Th>
-                          <Th>Táctico</Th>
-                          <Th>Físico</Th>
-                          <Th>Psicológico</Th>
-                          <Th>Evaluador</Th>
-                        </Tr>
-                      </Thead>
-                      <Tbody>
-                        {evaluaciones.map((eva: any) => {
-                          const promTec = calcularPromedio([eva.tecControl, eva.tecPase, eva.tecTiro, eva.tecRegate, eva.tecCabeceo].filter(Boolean))
-                          const promTac = calcularPromedio([eva.tacPosicionamiento, eva.tacLectura, eva.tacMarcaje, eva.tacCobertura, eva.tacVision].filter(Boolean))
-                          const promFis = calcularPromedio([eva.fisVelocidad, eva.fisResistencia, eva.fisFuerza, eva.fisAgilidad, eva.fisFlexibilidad].filter(Boolean))
-                          const promPsi = calcularPromedio([eva.psiConcentracion, eva.psiLiderazgo, eva.psiDisciplina, eva.psiMotivacion, eva.psiTrabEquipo].filter(Boolean))
-                          
-                          return (
-                            <Tr key={eva.id}>
-                              <Td>{format(new Date(eva.fecha), 'dd/MM/yyyy', { locale: es })}</Td>
-                              <Td>
-                                <Badge colorScheme={getColorByValue(parseFloat(promTec))}>{promTec}</Badge>
-                              </Td>
-                              <Td>
-                                <Badge colorScheme={getColorByValue(parseFloat(promTac))}>{promTac}</Badge>
-                              </Td>
-                              <Td>
-                                <Badge colorScheme={getColorByValue(parseFloat(promFis))}>{promFis}</Badge>
-                              </Td>
-                              <Td>
-                                <Badge colorScheme={getColorByValue(parseFloat(promPsi))}>{promPsi}</Badge>
-                              </Td>
-                              <Td>{eva.evaluadoPor || '-'}</Td>
-                            </Tr>
-                          )
-                        })}
-                      </Tbody>
-                    </Table>
+                    <Box overflowX="auto">
+                      <Table variant="simple" size="sm">
+                        <Thead>
+                          <Tr>
+                            <Th>Fecha</Th>
+                            <Th>Técnico</Th>
+                            <Th>Táctico</Th>
+                            <Th>Físico</Th>
+                            <Th>Psicológico</Th>
+                            <Th>Evaluador</Th>
+                          </Tr>
+                        </Thead>
+                        <Tbody>
+                          {evaluaciones.map((eva: any) => {
+                            const promTec = calcularPromedio([eva.tecControl, eva.tecPase, eva.tecTiro, eva.tecRegate, eva.tecCabeceo].filter(Boolean))
+                            const promTac = calcularPromedio([eva.tacPosicionamiento, eva.tacLectura, eva.tacMarcaje, eva.tacCobertura, eva.tacVision].filter(Boolean))
+                            const promFis = calcularPromedio([eva.fisVelocidad, eva.fisResistencia, eva.fisFuerza, eva.fisAgilidad, eva.fisFlexibilidad].filter(Boolean))
+                            const promPsi = calcularPromedio([eva.psiConcentracion, eva.psiLiderazgo, eva.psiDisciplina, eva.psiMotivacion, eva.psiTrabEquipo].filter(Boolean))
+                            
+                            return (
+                              <Tr key={eva.id}>
+                                <Td>{format(new Date(eva.fecha), 'dd/MM/yyyy', { locale: es })}</Td>
+                                <Td>
+                                  <Badge colorScheme={getColorByValue(parseFloat(promTec))}>{promTec}</Badge>
+                                </Td>
+                                <Td>
+                                  <Badge colorScheme={getColorByValue(parseFloat(promTac))}>{promTac}</Badge>
+                                </Td>
+                                <Td>
+                                  <Badge colorScheme={getColorByValue(parseFloat(promFis))}>{promFis}</Badge>
+                                </Td>
+                                <Td>
+                                  <Badge colorScheme={getColorByValue(parseFloat(promPsi))}>{promPsi}</Badge>
+                                </Td>
+                                <Td>{eva.evaluadoPor || '-'}</Td>
+                              </Tr>
+                            )
+                          })}
+                        </Tbody>
+                      </Table>
+                    </Box>
                   ) : (
                     <Card>
                       <CardBody textAlign="center" py={8}>

@@ -7,6 +7,7 @@ import {
   Heading,
   VStack,
   HStack,
+  Stack,
   Card,
   CardBody,
   Badge,
@@ -106,8 +107,8 @@ export default function AsistenciasPage() {
 
         {/* Filtros compactos en una sola línea */}
         <Card shadow="sm" borderWidth="1px" borderColor="gray.100">
-          <CardBody p={4}>
-            <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4}>
+          <CardBody p={{ base: 3, md: 4 }}>
+            <SimpleGrid columns={{ base: 1, md: 3 }} spacing={{ base: 3, md: 4 }}>
               <InputGroup size="sm">
                 <InputLeftElement pointerEvents="none" color="gray.400">
                   <FiCalendar />
@@ -153,11 +154,11 @@ export default function AsistenciasPage() {
         </Card>
 
         {/* Estadísticas modernas */}
-        <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4}>
+        <SimpleGrid columns={{ base: 1, sm: 2, md: 3 }} spacing={{ base: 3, md: 4 }}>
           <Card bg="blue.50" borderWidth="1px" borderColor="blue.200">
             <CardBody>
               <HStack justify="space-between">
-                <Box>
+                <Box flex={1}>
                   <Text fontSize="xs" color="blue.600" fontWeight="medium" mb={1}>
                     Total
                   </Text>
@@ -165,11 +166,7 @@ export default function AsistenciasPage() {
                     {estadisticas.total}
                   </Text>
                 </Box>
-                <Box
-                  p={3}
-                  bg="blue.100"
-                  borderRadius="lg"
-                >
+                <Box p={3} bg="blue.100" borderRadius="lg">
                   <FiUser size={20} color="var(--chakra-colors-blue-600)" />
                 </Box>
               </HStack>
@@ -178,8 +175,8 @@ export default function AsistenciasPage() {
 
           <Card bg="green.50" borderWidth="1px" borderColor="green.200">
             <CardBody>
-              <HStack justify="space-between">
-                <Box>
+              <HStack justify="space-between" align="flex-start">
+                <Box flex={1}>
                   <Text fontSize="xs" color="green.600" fontWeight="medium" mb={1}>
                     Puntuales
                   </Text>
@@ -190,11 +187,7 @@ export default function AsistenciasPage() {
                     {estadisticas.porcentajePuntualidad.toFixed(0)}%
                   </Text>
                 </Box>
-                <Box
-                  p={3}
-                  bg="green.100"
-                  borderRadius="lg"
-                >
+                <Box p={3} bg="green.100" borderRadius="lg">
                   <FiCheckCircle size={20} color="var(--chakra-colors-green-600)" />
                 </Box>
               </HStack>
@@ -203,8 +196,8 @@ export default function AsistenciasPage() {
 
           <Card bg="orange.50" borderWidth="1px" borderColor="orange.200">
             <CardBody>
-              <HStack justify="space-between">
-                <Box>
+              <HStack justify="space-between" align="flex-start">
+                <Box flex={1}>
                   <Text fontSize="xs" color="orange.600" fontWeight="medium" mb={1}>
                     Tardíos
                   </Text>
@@ -212,11 +205,7 @@ export default function AsistenciasPage() {
                     {estadisticas.tardios}
                   </Text>
                 </Box>
-                <Box
-                  p={3}
-                  bg="orange.100"
-                  borderRadius="lg"
-                >
+                <Box p={3} bg="orange.100" borderRadius="lg">
                   <FiAlertCircle size={20} color="var(--chakra-colors-orange-600)" />
                 </Box>
               </HStack>
@@ -234,7 +223,7 @@ export default function AsistenciasPage() {
             </CardBody>
           </Card>
         ) : filteredAsistencias.length > 0 ? (
-          <VStack spacing={3} align="stretch">
+          <VStack spacing={{ base: 3, md: 4 }} align="stretch">
             {filteredAsistencias.map((asistencia) => (
               <Card
                 key={asistencia.id}
@@ -244,18 +233,23 @@ export default function AsistenciasPage() {
                 _hover={{ shadow: 'md', borderColor: 'blue.300' }}
                 transition="all 0.2s"
               >
-                <CardBody p={4}>
-                  <HStack spacing={4} justify="space-between" flexWrap="wrap">
-                    <HStack spacing={4} flex={1}>
-                      <HStack spacing={2} minW="80px">
+                <CardBody p={{ base: 3, md: 4 }}>
+                  <Stack direction={{ base: 'column', lg: 'row' }} spacing={{ base: 3, md: 4 }} align="stretch">
+                    <Stack
+                      direction={{ base: 'column', sm: 'row' }}
+                      spacing={{ base: 3, md: 4 }}
+                      flex={1}
+                      align={{ base: 'flex-start', sm: 'center' }}
+                    >
+                      <HStack spacing={2} minW="80px" align="center">
                         <FiClock color="var(--chakra-colors-gray-500)" />
                         <Text fontSize="sm" fontWeight="medium" color="gray.700">
                           {format(new Date(asistencia.fecha), 'HH:mm', { locale: es })}
                         </Text>
                       </HStack>
                       
-                      <Box flex={1}>
-                        <Text fontWeight="semibold" mb={1}>
+                      <Box flex={1} minW={0}>
+                        <Text fontWeight="semibold" mb={1} noOfLines={1}>
                           {asistencia.nino.nombre} {asistencia.nino.apellido}
                         </Text>
                         <Text fontSize="xs" color="gray.500">
@@ -263,31 +257,38 @@ export default function AsistenciasPage() {
                         </Text>
                       </Box>
 
-                      <Badge colorScheme="blue" variant="subtle">
-                        {asistencia.nino.categoria}
-                      </Badge>
+                      <Stack
+                        direction="row"
+                        spacing={2}
+                        flexWrap="wrap"
+                        align="center"
+                      >
+                        <Badge colorScheme="blue" variant="subtle">
+                          {asistencia.nino.categoria}
+                        </Badge>
 
-                      <Badge colorScheme={getTipoColor(asistencia.tipo)} variant="subtle">
-                        {asistencia.tipo === 'entrada' ? 'Entrada' : 'Salida'}
-                      </Badge>
+                        <Badge colorScheme={getTipoColor(asistencia.tipo)} variant="subtle">
+                          {asistencia.tipo === 'entrada' ? 'Entrada' : 'Salida'}
+                        </Badge>
 
-                      {asistencia.puntual ? (
-                        <HStack spacing={1}>
-                          <FiCheckCircle size={14} />
-                          <Badge colorScheme="green" variant="subtle">
-                            Puntual
-                          </Badge>
-                        </HStack>
-                      ) : (
-                        <HStack spacing={1}>
-                          <FiAlertCircle size={14} />
-                          <Badge colorScheme="orange" variant="subtle">
-                            Tardío
-                          </Badge>
-                        </HStack>
-                      )}
-                    </HStack>
-                  </HStack>
+                        {asistencia.puntual ? (
+                          <HStack spacing={1}>
+                            <FiCheckCircle size={14} />
+                            <Badge colorScheme="green" variant="subtle">
+                              Puntual
+                            </Badge>
+                          </HStack>
+                        ) : (
+                          <HStack spacing={1}>
+                            <FiAlertCircle size={14} />
+                            <Badge colorScheme="orange" variant="subtle">
+                              Tardío
+                            </Badge>
+                          </HStack>
+                        )}
+                      </Stack>
+                    </Stack>
+                  </Stack>
                   {asistencia.observaciones && (
                     <Box mt={3} pt={3} borderTopWidth="1px" borderColor="gray.100">
                       <Text fontSize="xs" color="gray.600" fontStyle="italic">
