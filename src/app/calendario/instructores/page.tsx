@@ -31,10 +31,13 @@ import {
   Badge,
   Flex,
   IconButton,
-  Stack
+  Stack,
+  Select,
+  Divider
 } from '@chakra-ui/react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { FiPlus, FiEdit, FiTrash2, FiUser } from 'react-icons/fi'
+import { useAuth } from '@/hooks/useAuth'
 
 interface Instructor {
   id: string
@@ -49,15 +52,28 @@ interface Instructor {
   }
 }
 
+interface UsuarioProfesor {
+  id: string
+  nombre: string
+  email: string
+  categoria: string | null
+}
+
 export default function InstructoresPage() {
+  const { isAdmin } = useAuth()
   const { isOpen, onOpen, onClose } = useDisclosure()
+  const { isOpen: isCategoriaOpen, onOpen: onCategoriaOpen, onClose: onCategoriaClose } = useDisclosure()
   const [editingInstructor, setEditingInstructor] = useState<Instructor | null>(null)
+  const [editingUsuario, setEditingUsuario] = useState<UsuarioProfesor | null>(null)
   const [formData, setFormData] = useState({
     nombre: '',
     cedula: '',
     email: '',
     telefono: '',
     especialidad: ''
+  })
+  const [categoriaData, setCategoriaData] = useState({
+    categoria: ''
   })
   const toast = useToast()
   const queryClient = useQueryClient()
@@ -68,6 +84,55 @@ export default function InstructoresPage() {
       const res = await fetch('/api/instructores')
       if (!res.ok) throw new Error('Error al cargar instructores')
       return res.json()
+    }
+  })
+
+  const { data: usuariosProfesores } = useQuery<UsuarioProfesor[]>({
+    queryKey: ['usuarios', 'profesor'],
+    queryFn: async () => {
+      const res = await fetch('/api/usuarios?rol=profesor')
+      if (!res.ok) throw new Error('Error al cargar profesores')
+      return res.json()
+    },
+    enabled: isAdmin
+  })
+
+  const categoriaMutation = useMutation({
+    mutationFn: async ({ usuarioId, categoria }: { usuarioId: string; categoria: string }) => {
+      const token = localStorage.getItem('football_auth_token')
+      const res = await fetch(`/api/usuarios/${usuarioId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ categoria: categoria || null })
+      })
+      if (!res.ok) {
+        const error = await res.json()
+        throw new Error(error.error || 'Error al actualizar categoría')
+      }
+      return res.json()
+    },
+    onSuccess: () => {
+      toast({
+        title: 'Categoría actualizada',
+        description: 'La categoría del instructor se ha actualizado exitosamente',
+        status: 'success',
+        duration: 3000
+      })
+      queryClient.invalidateQueries({ queryKey: ['usuarios'] })
+      onCategoriaClose()
+      setEditingUsuario(null)
+      setCategoriaData({ categoria: '' })
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Error al actualizar categoría',
+        status: 'error',
+        duration: 3000
+      })
     }
   })
 
@@ -120,6 +185,23 @@ export default function InstructoresPage() {
     e.preventDefault()
     mutation.mutate(formData)
   }
+
+  const handleEditCategoria = (usuario: UsuarioProfesor) => {
+    setEditingUsuario(usuario)
+    setCategoriaData({ categoria: usuario.categoria || '' })
+    onCategoriaOpen()
+  }
+
+  const handleSubmitCategoria = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editingUsuario) return
+    categoriaMutation.mutate({
+      usuarioId: editingUsuario.id,
+      categoria: categoriaData.categoria
+    })
+  }
+
+  const categorias = ['Sub-6', 'Sub-8', 'Sub-10', 'Sub-12', 'Sub-14', 'Sub-16', 'Sub-18']
 
   return (
     <Container maxW="container.xl" py={8}>
@@ -201,6 +283,65 @@ export default function InstructoresPage() {
             </Box>
           </CardBody>
         </Card>
+
+        {/* Sección de Usuarios Profesores - Solo para Admin */}
+        {isAdmin && (
+          <>
+            <Divider />
+            <Heading size="lg">👨‍🏫 Asignación de Categorías a Instructores</Heading>
+            <Text color="gray.600" fontSize="sm">
+              Asigna una categoría a cada instructor para que solo vea los niños de su categoría asignada.
+            </Text>
+            <Card>
+              <CardBody>
+                <Box overflowX="auto">
+                  <Table variant="simple" size="sm" minW="760px">
+                    <Thead>
+                      <Tr>
+                        <Th>Nombre</Th>
+                        <Th>Email</Th>
+                        <Th>Categoría Asignada</Th>
+                        <Th>Acciones</Th>
+                      </Tr>
+                    </Thead>
+                    <Tbody>
+                      {usuariosProfesores?.map((usuario) => (
+                        <Tr key={usuario.id}>
+                          <Td fontWeight="bold">{usuario.nombre}</Td>
+                          <Td>{usuario.email}</Td>
+                          <Td>
+                            {usuario.categoria ? (
+                              <Badge colorScheme="green">{usuario.categoria}</Badge>
+                            ) : (
+                              <Badge colorScheme="gray">Sin asignar</Badge>
+                            )}
+                          </Td>
+                          <Td>
+                            <IconButton
+                              aria-label="Asignar categoría"
+                              icon={<FiEdit />}
+                              size="sm"
+                              variant="ghost"
+                              colorScheme="blue"
+                              onClick={() => handleEditCategoria(usuario)}
+                            />
+                          </Td>
+                        </Tr>
+                      ))}
+                      {usuariosProfesores?.length === 0 && (
+                        <Tr>
+                          <Td colSpan={4} textAlign="center" color="gray.500">
+                            No hay usuarios profesores registrados
+                          </Td>
+                        </Tr>
+                      )}
+                    </Tbody>
+                  </Table>
+                </Box>
+              </CardBody>
+            </Card>
+          </>
+        )}
       </VStack>
 
       <Modal isOpen={isOpen} onClose={onClose}>
@@ -260,6 +401,49 @@ export default function InstructoresPage() {
                     Cancelar
                   </Button>
                   <Button type="submit" colorScheme="blue" flex={1} width={{ base: '100%', md: 'auto' }}>
+                    Guardar
+                  </Button>
+                </Stack>
+              </VStack>
+            </ModalBody>
+          </form>
+        </ModalContent>
+      </Modal>
+
+      {/* Modal para asignar categoría */}
+      <Modal isOpen={isCategoriaOpen} onClose={onCategoriaClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <form onSubmit={handleSubmitCategoria}>
+            <ModalHeader>
+              Asignar Categoría a {editingUsuario?.nombre}
+            </ModalHeader>
+            <ModalCloseButton />
+            <ModalBody pb={6}>
+              <VStack spacing={4}>
+                <FormControl>
+                  <FormLabel>Categoría</FormLabel>
+                  <Select
+                    value={categoriaData.categoria}
+                    onChange={(e) => setCategoriaData({ categoria: e.target.value })}
+                    placeholder="Seleccionar categoría"
+                  >
+                    {categorias.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </Select>
+                  <Text fontSize="xs" color="gray.500" mt={2}>
+                    Deja vacío para quitar la asignación
+                  </Text>
+                </FormControl>
+
+                <Stack direction={{ base: 'column', md: 'row' }} spacing={4} width="full">
+                  <Button type="button" onClick={onCategoriaClose} flex={1} width={{ base: '100%', md: 'auto' }}>
+                    Cancelar
+                  </Button>
+                  <Button type="submit" colorScheme="blue" flex={1} width={{ base: '100%', md: 'auto' }} isLoading={categoriaMutation.isPending}>
                     Guardar
                   </Button>
                 </Stack>

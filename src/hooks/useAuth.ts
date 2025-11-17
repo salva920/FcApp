@@ -5,6 +5,7 @@ interface Usuario {
   email: string
   nombre: string
   rol: string
+  categoria?: string | null
   representanteId?: string
   instructorId?: string
 }

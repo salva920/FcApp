@@ -70,6 +70,7 @@ interface Nino {
 
 export default React.memo(function NinosPage() {
   const { usuario, isAdmin, isRepresentante, isProfesor } = useAuth()
+  const categoriaAsignada = usuario?.categoria
   const { isOpen, onOpen, onClose } = useDisclosure()
   const { isOpen: isViewOpen, onOpen: onViewOpen, onClose: onViewClose } = useDisclosure()
   const { isOpen: isFacialOpen, onOpen: onFacialOpen, onClose: onFacialClose } = useDisclosure()
@@ -440,6 +441,11 @@ export default React.memo(function NinosPage() {
           {isRepresentante && (
             <Text color="gray.600" fontSize="sm" mt={1}>
               Administra la información de tus niños registrados
+            </Text>
+          )}
+          {isProfesor && categoriaAsignada && (
+            <Text color="blue.600" fontSize="sm" mt={1} fontWeight="medium">
+              📋 Mostrando solo niños de la categoría: <strong>{categoriaAsignada}</strong>
             </Text>
           )}
         </Box>

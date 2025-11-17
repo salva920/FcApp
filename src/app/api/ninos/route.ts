@@ -8,9 +8,31 @@ export async function GET(request: NextRequest) {
     const representanteId = searchParams.get('representanteId')
     const categoria = searchParams.get('categoria')
     
+    // Obtener usuario del token si existe
+    let userCategoria: string | null = null
+    try {
+      const token = request.headers.get('authorization')?.replace('Bearer ', '') ||
+                    request.cookies.get('football_auth_token')?.value
+      if (token) {
+        const jwt = require('jsonwebtoken')
+        const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'
+        const decoded = jwt.verify(token, JWT_SECRET) as any
+        if (decoded.rol === 'profesor' && decoded.categoria) {
+          userCategoria = decoded.categoria
+        }
+      }
+    } catch {
+      // Si no hay token o es inválido, continuar sin filtrar
+    }
+    
     const where: any = {}
     if (representanteId) where.representanteId = representanteId
-    if (categoria) where.categoria = categoria
+    // Si es profesor, filtrar por su categoría asignada
+    if (userCategoria) {
+      where.categoria = userCategoria
+    } else if (categoria) {
+      where.categoria = categoria
+    }
     where.activo = true // Solo niños activos
     
     const ninos = await prisma.nino.findMany({

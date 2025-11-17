@@ -150,6 +150,7 @@ export default function Navbar() {
                     <MenuItem icon={<FiAward />} as={Link} href="/torneos">Torneos</MenuItem>
                     <MenuItem icon={<FiUsers />} as={Link} href="/representantes">Representantes</MenuItem>
                     <MenuItem icon={<FiUsers />} as={Link} href="/ninos">Niños</MenuItem>
+                    <MenuItem icon={<FiUser />} as={Link} href="/calendario/instructores">Gestión de Instructores</MenuItem>
                     <MenuItem icon={<FiCalendar />} as={Link} href="/calendario">Calendario</MenuItem>
                     <MenuItem icon={<FiDollarSign />} as={Link} href="/pagos">Pagos</MenuItem>
                     <MenuItem icon={<FiCamera />} as={Link} href="/checkin">Check-in</MenuItem>
