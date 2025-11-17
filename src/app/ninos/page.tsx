@@ -126,8 +126,9 @@ export default React.memo(function NinosPage() {
     
     let filtered = ninos
     
-    // Si es representante, filtrar solo sus niños
-    if (isRepresentante && usuario?.representanteId) {
+    // Si es representante normal (no delegado), filtrar solo sus niños
+    // Si es representante-delegado, ver todos los niños de su categoría (ya filtrado por la API)
+    if (isRepresentante && usuario?.representanteId && usuario?.rol !== 'representante-delegado') {
       filtered = filtered.filter(nino => nino.representante.id === usuario.representanteId)
     }
     
@@ -437,15 +438,31 @@ export default React.memo(function NinosPage() {
         align={{ base: 'stretch', md: 'center' }}
       >
         <Box>
-          <Heading size="lg">{isRepresentante ? 'Mis Niños' : 'Gestión de Niños'}</Heading>
-          {isRepresentante && (
+          <Heading size="lg">
+            {usuario?.rol === 'representante-delegado' 
+              ? 'Gestión de Niños' 
+              : isRepresentante 
+                ? 'Mis Niños' 
+                : 'Gestión de Niños'}
+          </Heading>
+          {isRepresentante && usuario?.rol !== 'representante-delegado' && (
             <Text color="gray.600" fontSize="sm" mt={1}>
               Administra la información de tus niños registrados
             </Text>
           )}
-          {(isProfesor || usuario?.rol === 'representante-delegado') && categoriaAsignada && (
+          {usuario?.rol === 'representante-delegado' && (
+            <Text color="gray.600" fontSize="sm" mt={1}>
+              Gestiona todos los niños de tu categoría asignada
+            </Text>
+          )}
+          {usuario?.rol === 'profesor' && categoriaAsignada && (
             <Text color="blue.600" fontSize="sm" mt={1} fontWeight="medium">
               📋 Mostrando solo niños de la categoría: <strong>{categoriaAsignada}</strong>
+            </Text>
+          )}
+          {usuario?.rol === 'representante-delegado' && categoriaAsignada && (
+            <Text color="purple.600" fontSize="sm" mt={1} fontWeight="medium">
+              👥 Mostrando todos los niños de la categoría: <strong>{categoriaAsignada}</strong>
             </Text>
           )}
         </Box>

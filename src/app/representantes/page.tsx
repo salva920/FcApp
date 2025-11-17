@@ -111,9 +111,11 @@ export default function RepresentantesPage() {
   const { isOpen: isComparisonOpen, onOpen: onComparisonOpen, onClose: onComparisonClose } = useDisclosure()
   const { isOpen: isRolOpen, onOpen: onRolOpen, onClose: onRolClose } = useDisclosure()
   const [selectedRepresentante, setSelectedRepresentante] = React.useState<Representante | null>(null)
-  const [selectedUsuario, setSelectedUsuario] = React.useState<{ id: string; nombre: string; rol: string } | null>(null)
-  const [rolData, setRolData] = React.useState({ rol: '' })
+  const [selectedUsuario, setSelectedUsuario] = React.useState<{ id: string; nombre: string; rol: string; categoria?: string | null } | null>(null)
+  const [rolData, setRolData] = React.useState({ rol: '', categoria: '' })
   const [searchQuery, setSearchQuery] = React.useState('')
+  
+  const categorias = ['Sub-6', 'Sub-8', 'Sub-10', 'Sub-12', 'Sub-14', 'Sub-16', 'Sub-18']
   const [currentStep, setCurrentStep] = React.useState(1)
   const [showAddNino, setShowAddNino] = React.useState(false)
   const [newRepresentanteId, setNewRepresentanteId] = React.useState<string | null>(null)
@@ -257,15 +259,36 @@ export default function RepresentantesPage() {
   })
 
   const rolMutation = useMutation({
-    mutationFn: async ({ usuarioId, rol }: { usuarioId: string; rol: string }) => {
+    mutationFn: async ({ usuarioId, rol, categoria, rolActual }: { usuarioId: string; rol: string; categoria?: string; rolActual?: string }) => {
       const token = localStorage.getItem('football_auth_token')
+      const body: any = {}
+      
+      // Si se cambia el rol, incluirlo en el body
+      if (rol) {
+        body.rol = rol
+      }
+      
+      // Si se cambia a representante-delegado, siempre incluir la categoría
+      if (rol === 'representante-delegado') {
+        if (!categoria) {
+          throw new Error('La categoría es requerida para el rol de Representante Delegado')
+        }
+        body.categoria = categoria
+      } else if (rol === 'representante') {
+        // Si se cambia de vuelta a representante, quitar la categoría
+        body.categoria = null
+      } else if (rolActual === 'representante-delegado' && categoria) {
+        // Si ya es delegado y solo se actualiza la categoría (sin cambiar el rol)
+        body.categoria = categoria
+      }
+      
       const res = await fetch(`/api/usuarios/${usuarioId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ rol })
+        body: JSON.stringify(body)
       })
       if (!res.ok) {
         const error = await res.json()
@@ -284,7 +307,7 @@ export default function RepresentantesPage() {
       queryClient.invalidateQueries({ queryKey: ['usuarios'] })
       onRolClose()
       setSelectedUsuario(null)
-      setRolData({ rol: '' })
+      setRolData({ rol: '', categoria: '' })
     },
     onError: (error: any) => {
       toast({
@@ -299,9 +322,25 @@ export default function RepresentantesPage() {
   const handleSubmitRol = (e: React.FormEvent) => {
     e.preventDefault()
     if (!selectedUsuario) return
+    
+    // Si el rol actual o el nuevo es representante-delegado, validar categoría
+    const esDelegado = rolData.rol === 'representante-delegado' || selectedUsuario.rol === 'representante-delegado'
+    
+    if (esDelegado && !rolData.categoria) {
+      toast({
+        title: 'Categoría requerida',
+        description: 'Debes seleccionar una categoría para el rol de Representante Delegado',
+        status: 'error',
+        duration: 3000
+      })
+      return
+    }
+    
     rolMutation.mutate({
       usuarioId: selectedUsuario.id,
-      rol: rolData.rol
+      rol: rolData.rol,
+      categoria: rolData.categoria,
+      rolActual: selectedUsuario.rol
     })
   }
 
@@ -684,31 +723,38 @@ export default function RepresentantesPage() {
                   <VStack align="start" spacing={1}>
                     {representante.usuarios && representante.usuarios.length > 0 ? (
                       representante.usuarios.map((usuario) => (
-                        <HStack key={usuario.id} spacing={2}>
-                          <Badge
-                            colorScheme={
-                              usuario.rol === 'representante-delegado' ? 'purple' :
-                              usuario.rol === 'representante' ? 'green' : 'gray'
-                            }
-                          >
-                            {usuario.rol === 'representante-delegado' ? 'Representante Delegado' :
-                             usuario.rol === 'representante' ? 'Representante' : usuario.rol}
-                          </Badge>
-                          {isAdmin && (
-                            <IconButton
-                              aria-label="Cambiar rol"
-                              icon={<FiShield />}
-                              size="xs"
-                              variant="ghost"
-                              colorScheme="blue"
-                              onClick={() => {
-                                setSelectedUsuario(usuario)
-                                setRolData({ rol: usuario.rol })
-                                onRolOpen()
-                              }}
-                            />
+                        <VStack key={usuario.id} align="start" spacing={1}>
+                          <HStack spacing={2}>
+                            <Badge
+                              colorScheme={
+                                usuario.rol === 'representante-delegado' ? 'purple' :
+                                usuario.rol === 'representante' ? 'green' : 'gray'
+                              }
+                            >
+                              {usuario.rol === 'representante-delegado' ? 'Representante Delegado' :
+                               usuario.rol === 'representante' ? 'Representante' : usuario.rol}
+                            </Badge>
+                            {isAdmin && (
+                              <IconButton
+                                aria-label="Cambiar rol"
+                                icon={<FiShield />}
+                                size="xs"
+                                variant="ghost"
+                                colorScheme="blue"
+                                onClick={() => {
+                                  setSelectedUsuario(usuario)
+                                  setRolData({ rol: usuario.rol, categoria: usuario.categoria || '' })
+                                  onRolOpen()
+                                }}
+                              />
+                            )}
+                          </HStack>
+                          {usuario.rol === 'representante-delegado' && usuario.categoria && (
+                            <Badge colorScheme="blue" fontSize="xs">
+                              Categoría: {usuario.categoria}
+                            </Badge>
                           )}
-                        </HStack>
+                        </VStack>
                       ))
                     ) : (
                       <Badge colorScheme="gray">Sin usuario</Badge>
@@ -979,7 +1025,7 @@ export default function RepresentantesPage() {
                   <FormLabel>Rol</FormLabel>
                   <Select
                     value={rolData.rol}
-                    onChange={(e) => setRolData({ rol: e.target.value })}
+                    onChange={(e) => setRolData({ ...rolData, rol: e.target.value })}
                   >
                     <option value="representante">Representante</option>
                     <option value="representante-delegado">Representante Delegado</option>
@@ -989,11 +1035,41 @@ export default function RepresentantesPage() {
                   </Text>
                 </FormControl>
 
+                {(rolData.rol === 'representante-delegado' || selectedUsuario?.rol === 'representante-delegado') && (
+                  <FormControl isRequired>
+                    <FormLabel>Categoría</FormLabel>
+                    <Select
+                      value={rolData.categoria}
+                      onChange={(e) => setRolData({ ...rolData, categoria: e.target.value })}
+                      placeholder="Seleccionar categoría"
+                    >
+                      {categorias.map((cat) => (
+                        <option key={cat} value={cat}>
+                          {cat}
+                        </option>
+                      ))}
+                    </Select>
+                    <Text fontSize="xs" color="gray.500" mt={2}>
+                      La categoría determina qué niños podrá ver y gestionar el representante delegado.
+                    </Text>
+                  </FormControl>
+                )}
+
                 <Stack direction={{ base: 'column', md: 'row' }} spacing={4} width="full">
                   <Button type="button" onClick={onRolClose} flex={1} width={{ base: '100%', md: 'auto' }}>
                     Cancelar
                   </Button>
-                  <Button type="submit" colorScheme="blue" flex={1} width={{ base: '100%', md: 'auto' }} isLoading={rolMutation.isPending}>
+                  <Button 
+                    type="submit" 
+                    colorScheme="blue" 
+                    flex={1} 
+                    width={{ base: '100%', md: 'auto' }} 
+                    isLoading={rolMutation.isPending}
+                    isDisabled={
+                      (rolData.rol === 'representante-delegado' || selectedUsuario?.rol === 'representante-delegado') && 
+                      !rolData.categoria
+                    }
+                  >
                     Guardar
                   </Button>
                 </Stack>

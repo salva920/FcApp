@@ -10,6 +10,7 @@ export async function GET(request: NextRequest) {
     
     // Obtener usuario del token si existe
     let userCategoria: string | null = null
+    let userRol: string | null = null
     try {
       const token = request.headers.get('authorization')?.replace('Bearer ', '') ||
                     request.cookies.get('football_auth_token')?.value
@@ -17,6 +18,7 @@ export async function GET(request: NextRequest) {
         const jwt = require('jsonwebtoken')
         const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'
         const decoded = jwt.verify(token, JWT_SECRET) as any
+        userRol = decoded.rol
         if ((decoded.rol === 'profesor' || decoded.rol === 'representante-delegado') && decoded.categoria) {
           userCategoria = decoded.categoria
         }
@@ -26,8 +28,14 @@ export async function GET(request: NextRequest) {
     }
     
     const where: any = {}
-    if (representanteId) where.representanteId = representanteId
-    // Si es profesor, filtrar por su categoría asignada
+    
+    // Si es representante-delegado, NO filtrar por representanteId (ver todos los niños de su categoría)
+    // Si es representante normal, sí filtrar por representanteId
+    if (representanteId && userRol !== 'representante-delegado') {
+      where.representanteId = representanteId
+    }
+    
+    // Si es profesor o representante-delegado, filtrar por su categoría asignada
     if (userCategoria) {
       where.categoria = userCategoria
     } else if (categoria) {
