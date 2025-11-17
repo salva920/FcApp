@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validar rol
-    if (!['admin', 'profesor', 'representante'].includes(rol)) {
+    if (!['admin', 'profesor', 'representante', 'representante-delegado'].includes(rol)) {
       return NextResponse.json(
         { error: 'Rol no válido' },
         { status: 400 }

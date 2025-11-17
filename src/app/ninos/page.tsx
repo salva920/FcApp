@@ -443,7 +443,7 @@ export default React.memo(function NinosPage() {
               Administra la información de tus niños registrados
             </Text>
           )}
-          {isProfesor && categoriaAsignada && (
+          {(isProfesor || usuario?.rol === 'representante-delegado') && categoriaAsignada && (
             <Text color="blue.600" fontSize="sm" mt={1} fontWeight="medium">
               📋 Mostrando solo niños de la categoría: <strong>{categoriaAsignada}</strong>
             </Text>

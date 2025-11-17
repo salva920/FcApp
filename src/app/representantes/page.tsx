@@ -43,10 +43,12 @@ import {
   Progress,
   IconButton,
   Stack,
-  SimpleGrid
+  SimpleGrid,
+  Select
 } from '@chakra-ui/react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { FiPlus, FiEdit2, FiTrash2, FiSearch, FiUser, FiDollarSign, FiUsers, FiChevronLeft, FiChevronRight } from 'react-icons/fi'
+import { FiPlus, FiEdit2, FiTrash2, FiSearch, FiUser, FiDollarSign, FiUsers, FiChevronLeft, FiChevronRight, FiShield } from 'react-icons/fi'
+import { useAuth } from '@/hooks/useAuth'
 import dynamic from 'next/dynamic'
 import { Buffer } from 'buffer'
 import { useRouter } from 'next/navigation'
@@ -74,6 +76,14 @@ interface Representante {
   telefono: string
   direccion?: string
   createdAt: string
+  usuarios?: Array<{
+    id: string
+    email: string
+    nombre: string
+    rol: string
+    categoria?: string | null
+    activo: boolean
+  }>
   ninos: Array<{
     id: string
     nombre: string
@@ -94,11 +104,15 @@ interface Representante {
 }
 
 export default function RepresentantesPage() {
+  const { isAdmin } = useAuth()
   const router = useRouter()
   const { isOpen, onOpen, onClose } = useDisclosure()
   const { isOpen: isFacialOpen, onOpen: onFacialOpen, onClose: onFacialClose } = useDisclosure()
   const { isOpen: isComparisonOpen, onOpen: onComparisonOpen, onClose: onComparisonClose } = useDisclosure()
+  const { isOpen: isRolOpen, onOpen: onRolOpen, onClose: onRolClose } = useDisclosure()
   const [selectedRepresentante, setSelectedRepresentante] = React.useState<Representante | null>(null)
+  const [selectedUsuario, setSelectedUsuario] = React.useState<{ id: string; nombre: string; rol: string } | null>(null)
+  const [rolData, setRolData] = React.useState({ rol: '' })
   const [searchQuery, setSearchQuery] = React.useState('')
   const [currentStep, setCurrentStep] = React.useState(1)
   const [showAddNino, setShowAddNino] = React.useState(false)
@@ -241,6 +255,55 @@ export default function RepresentantesPage() {
       })
     }
   })
+
+  const rolMutation = useMutation({
+    mutationFn: async ({ usuarioId, rol }: { usuarioId: string; rol: string }) => {
+      const token = localStorage.getItem('football_auth_token')
+      const res = await fetch(`/api/usuarios/${usuarioId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ rol })
+      })
+      if (!res.ok) {
+        const error = await res.json()
+        throw new Error(error.error || 'Error al actualizar rol')
+      }
+      return res.json()
+    },
+    onSuccess: () => {
+      toast({
+        title: 'Rol actualizado',
+        description: 'El rol del usuario se ha actualizado exitosamente',
+        status: 'success',
+        duration: 3000
+      })
+      queryClient.invalidateQueries({ queryKey: ['representantes'] })
+      queryClient.invalidateQueries({ queryKey: ['usuarios'] })
+      onRolClose()
+      setSelectedUsuario(null)
+      setRolData({ rol: '' })
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Error',
+        description: error.message || 'Error al actualizar rol',
+        status: 'error',
+        duration: 3000
+      })
+    }
+  })
+
+  const handleSubmitRol = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!selectedUsuario) return
+    rolMutation.mutate({
+      usuarioId: selectedUsuario.id,
+      rol: rolData.rol
+    })
+  }
 
   const handleGoToGestionNinos = () => {
     handleFinish()
@@ -592,6 +655,7 @@ export default function RepresentantesPage() {
             <Tr>
               <Th>Representante</Th>
               <Th>Contacto</Th>
+              <Th>Rol</Th>
               <Th>Niños</Th>
               <Th>Estado de Pagos</Th>
               <Th>Monto Pendiente</Th>
@@ -614,6 +678,41 @@ export default function RepresentantesPage() {
                   <VStack align="start" spacing={1}>
                     <Text fontSize="sm">{representante.email}</Text>
                     <Text fontSize="sm">{representante.telefono}</Text>
+                  </VStack>
+                </Td>
+                <Td>
+                  <VStack align="start" spacing={1}>
+                    {representante.usuarios && representante.usuarios.length > 0 ? (
+                      representante.usuarios.map((usuario) => (
+                        <HStack key={usuario.id} spacing={2}>
+                          <Badge
+                            colorScheme={
+                              usuario.rol === 'representante-delegado' ? 'purple' :
+                              usuario.rol === 'representante' ? 'green' : 'gray'
+                            }
+                          >
+                            {usuario.rol === 'representante-delegado' ? 'Representante Delegado' :
+                             usuario.rol === 'representante' ? 'Representante' : usuario.rol}
+                          </Badge>
+                          {isAdmin && (
+                            <IconButton
+                              aria-label="Cambiar rol"
+                              icon={<FiShield />}
+                              size="xs"
+                              variant="ghost"
+                              colorScheme="blue"
+                              onClick={() => {
+                                setSelectedUsuario(usuario)
+                                setRolData({ rol: usuario.rol })
+                                onRolOpen()
+                              }}
+                            />
+                          )}
+                        </HStack>
+                      ))
+                    ) : (
+                      <Badge colorScheme="gray">Sin usuario</Badge>
+                    )}
                   </VStack>
                 </Td>
                 <Td>
@@ -864,6 +963,45 @@ export default function RepresentantesPage() {
           onClose={onComparisonClose}
         />
       )}
+
+      {/* Modal para cambiar rol */}
+      <Modal isOpen={isRolOpen} onClose={onRolClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <form onSubmit={handleSubmitRol}>
+            <ModalHeader>
+              Cambiar Rol de {selectedUsuario?.nombre}
+            </ModalHeader>
+            <ModalCloseButton />
+            <ModalBody pb={6}>
+              <VStack spacing={4}>
+                <FormControl>
+                  <FormLabel>Rol</FormLabel>
+                  <Select
+                    value={rolData.rol}
+                    onChange={(e) => setRolData({ rol: e.target.value })}
+                  >
+                    <option value="representante">Representante</option>
+                    <option value="representante-delegado">Representante Delegado</option>
+                  </Select>
+                  <Text fontSize="xs" color="gray.500" mt={2}>
+                    El rol "Representante Delegado" permite al representante acceder a funciones de instructor además de sus funciones como representante.
+                  </Text>
+                </FormControl>
+
+                <Stack direction={{ base: 'column', md: 'row' }} spacing={4} width="full">
+                  <Button type="button" onClick={onRolClose} flex={1} width={{ base: '100%', md: 'auto' }}>
+                    Cancelar
+                  </Button>
+                  <Button type="submit" colorScheme="blue" flex={1} width={{ base: '100%', md: 'auto' }} isLoading={rolMutation.isPending}>
+                    Guardar
+                  </Button>
+                </Stack>
+              </VStack>
+            </ModalBody>
+          </form>
+        </ModalContent>
+      </Modal>
     </Container>
   )
 }

@@ -56,6 +56,7 @@ interface UsuarioProfesor {
   id: string
   nombre: string
   email: string
+  rol: string
   categoria: string | null
 }
 
@@ -90,9 +91,15 @@ export default function InstructoresPage() {
   const { data: usuariosProfesores } = useQuery<UsuarioProfesor[]>({
     queryKey: ['usuarios', 'profesor'],
     queryFn: async () => {
-      const res = await fetch('/api/usuarios?rol=profesor')
-      if (!res.ok) throw new Error('Error al cargar profesores')
-      return res.json()
+      // Obtener tanto profesores como representantes-delegados
+      const [profesoresRes, delegadosRes] = await Promise.all([
+        fetch('/api/usuarios?rol=profesor'),
+        fetch('/api/usuarios?rol=representante-delegado')
+      ])
+      if (!profesoresRes.ok || !delegadosRes.ok) throw new Error('Error al cargar profesores')
+      const profesores = await profesoresRes.json()
+      const delegados = await delegadosRes.json()
+      return [...profesores, ...delegados]
     },
     enabled: isAdmin
   })
@@ -300,6 +307,7 @@ export default function InstructoresPage() {
                       <Tr>
                         <Th>Nombre</Th>
                         <Th>Email</Th>
+                        <Th>Rol</Th>
                         <Th>Categoría Asignada</Th>
                         <Th>Acciones</Th>
                       </Tr>
@@ -309,6 +317,17 @@ export default function InstructoresPage() {
                         <Tr key={usuario.id}>
                           <Td fontWeight="bold">{usuario.nombre}</Td>
                           <Td>{usuario.email}</Td>
+                          <Td>
+                            <Badge
+                              colorScheme={
+                                usuario.rol === 'representante-delegado' ? 'purple' :
+                                usuario.rol === 'profesor' ? 'blue' : 'gray'
+                              }
+                            >
+                              {usuario.rol === 'representante-delegado' ? 'Representante Delegado' :
+                               usuario.rol === 'profesor' ? 'Profesor' : usuario.rol}
+                            </Badge>
+                          </Td>
                           <Td>
                             {usuario.categoria ? (
                               <Badge colorScheme="green">{usuario.categoria}</Badge>
@@ -330,7 +349,7 @@ export default function InstructoresPage() {
                       ))}
                       {usuariosProfesores?.length === 0 && (
                         <Tr>
-                          <Td colSpan={4} textAlign="center" color="gray.500">
+                          <Td colSpan={5} textAlign="center" color="gray.500">
                             No hay usuarios profesores registrados
                           </Td>
                         </Tr>

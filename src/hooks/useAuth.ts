@@ -42,8 +42,9 @@ export function useAuth() {
     loading,
     isAuthenticated: !!usuario,
     isAdmin: usuario?.rol === 'admin',
-    isProfesor: usuario?.rol === 'profesor',
-    isRepresentante: usuario?.rol === 'representante',
+    isProfesor: usuario?.rol === 'profesor' || usuario?.rol === 'representante-delegado',
+    isRepresentanteDelegado: usuario?.rol === 'representante-delegado',
+    isRepresentante: usuario?.rol === 'representante' || usuario?.rol === 'representante-delegado',
     logout
   }
 }

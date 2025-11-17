@@ -49,6 +49,15 @@ export async function GET(request: NextRequest) {
         categoria: true,
         activo: true,
         createdAt: true,
+        representante: {
+          select: {
+            id: true,
+            nombre: true,
+            cedula: true,
+            email: true,
+            telefono: true
+          }
+        },
         instructor: {
           select: {
             id: true,

@@ -47,6 +47,7 @@ export default function Navbar() {
     switch (rol) {
       case 'admin': return 'purple'
       case 'profesor': return 'blue'
+      case 'representante-delegado': return 'purple'
       case 'representante': return 'green'
       default: return 'gray'
     }
@@ -56,6 +57,7 @@ export default function Navbar() {
     switch (rol) {
       case 'admin': return 'Administrador'
       case 'profesor': return 'Profesor'
+      case 'representante-delegado': return 'Representante Delegado'
       case 'representante': return 'Representante'
       default: return 'Usuario'
     }
@@ -133,7 +135,7 @@ export default function Navbar() {
               )}
               {isProfesor && (
                 <>
-                  <MenuGroup title="Profesor">
+                  <MenuGroup title={usuario?.rol === 'representante-delegado' ? 'Representante Delegado' : 'Profesor'}>
                     <MenuItem icon={<FiAward />} as={Link} href="/torneos">Torneos</MenuItem>
                     <MenuItem icon={<FiUsers />} as={Link} href="/ninos">Gestión de Niños</MenuItem>
                     <MenuItem icon={<FiCalendar />} as={Link} href="/asistencias">Asistencias</MenuItem>

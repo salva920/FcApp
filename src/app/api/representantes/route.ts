@@ -7,6 +7,16 @@ export async function GET() {
       include: {
         ninos: true,
         pagos: true,
+        usuarios: {
+          select: {
+            id: true,
+            email: true,
+            nombre: true,
+            rol: true,
+            categoria: true,
+            activo: true
+          }
+        },
         _count: {
           select: {
             ninos: true,

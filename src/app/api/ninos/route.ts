@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
         const jwt = require('jsonwebtoken')
         const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'
         const decoded = jwt.verify(token, JWT_SECRET) as any
-        if (decoded.rol === 'profesor' && decoded.categoria) {
+        if ((decoded.rol === 'profesor' || decoded.rol === 'representante-delegado') && decoded.categoria) {
           userCategoria = decoded.categoria
         }
       }

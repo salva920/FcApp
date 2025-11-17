@@ -31,8 +31,8 @@ export const NinoFilters: React.FC<NinoFiltersProps> = ({
   const cardBg = useColorModeValue('white', 'gray.800')
   const borderColor = useColorModeValue('gray.200', 'gray.600')
   
-  // Ocultar filtro de categoría si es profesor con categoría asignada
-  const mostrarFiltroCategoria = !(isProfesor && categoriaAsignada)
+  // Ocultar filtro de categoría si es profesor o representante-delegado con categoría asignada
+  const mostrarFiltroCategoria = !((isProfesor || usuario?.rol === 'representante-delegado') && categoriaAsignada)
 
   return (
     <Box mb={6} p={4} bg={cardBg} borderRadius="md" borderColor={borderColor} borderWidth="1px">

@@ -37,7 +37,7 @@ export async function PUT(
     }
 
     const body = await request.json()
-    const { categoria } = body
+    const { categoria, rol } = body
 
     // Validar que el usuario existe
     const usuario = await prisma.usuario.findUnique({
@@ -51,20 +51,48 @@ export async function PUT(
       )
     }
 
-    // Solo permitir actualizar categoría si el usuario es profesor
-    if (usuario.rol !== 'profesor') {
-      return NextResponse.json(
-        { error: 'Solo se puede asignar categoría a instructores (profesores)' },
-        { status: 400 }
-      )
+    const updateData: any = {}
+
+    // Si se envía categoría, actualizarla (solo para profesores)
+    if (categoria !== undefined) {
+      if (usuario.rol !== 'profesor' && usuario.rol !== 'representante-delegado') {
+        return NextResponse.json(
+          { error: 'Solo se puede asignar categoría a instructores (profesores o representantes-delegados)' },
+          { status: 400 }
+        )
+      }
+      updateData.categoria = categoria || null
     }
 
-    // Actualizar categoría
+    // Si se envía rol, actualizarlo (solo para representantes -> representante-delegado)
+    if (rol !== undefined) {
+      // Validar que el rol es válido
+      if (!['admin', 'profesor', 'representante', 'representante-delegado'].includes(rol)) {
+        return NextResponse.json(
+          { error: 'Rol no válido' },
+          { status: 400 }
+        )
+      }
+
+      // Solo permitir cambiar de representante a representante-delegado o viceversa
+      if (usuario.rol === 'representante' && rol === 'representante-delegado') {
+        updateData.rol = rol
+      } else if (usuario.rol === 'representante-delegado' && rol === 'representante') {
+        updateData.rol = rol
+      } else if (usuario.rol !== 'representante' && usuario.rol !== 'representante-delegado') {
+        return NextResponse.json(
+          { error: 'Solo se puede cambiar el rol de representantes a representante-delegado y viceversa' },
+          { status: 400 }
+        )
+      } else {
+        updateData.rol = rol
+      }
+    }
+
+    // Actualizar usuario
     const updatedUsuario = await prisma.usuario.update({
       where: { id: params.id },
-      data: {
-        categoria: categoria || null
-      }
+      data: updateData
     })
 
     return NextResponse.json(updatedUsuario)
