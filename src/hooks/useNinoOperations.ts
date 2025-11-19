@@ -122,14 +122,28 @@ export const useNinoOperations = () => {
       const res = await fetch(`/api/ninos/${id}`, {
         method: 'DELETE'
       })
-      if (!res.ok) throw new Error('Error al eliminar niño')
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}))
+        throw new Error(errorData.error || 'Error al eliminar niño')
+      }
+      return res.json()
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ninos'] })
       toast({
         title: 'Niño eliminado',
+        description: 'El niño ha sido eliminado correctamente',
         status: 'success',
         duration: 3000
+      })
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Error al eliminar',
+        description: error.message || 'No se pudo eliminar el niño',
+        status: 'error',
+        duration: 5000,
+        isClosable: true
       })
     }
   })

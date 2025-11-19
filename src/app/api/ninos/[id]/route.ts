@@ -104,15 +104,75 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Verificar que el niño existe
+    const nino = await prisma.nino.findUnique({
+      where: { id: params.id },
+      include: {
+        asistencias: true,
+        evaluaciones: true,
+        equipoJugadores: true,
+        estadisticasJugador: true
+      }
+    })
+
+    if (!nino) {
+      return NextResponse.json(
+        { error: 'Niño no encontrado' },
+        { status: 404 }
+      )
+    }
+
+    // Eliminar relaciones primero (cascada manual)
+    // Eliminar asistencias
+    if (nino.asistencias.length > 0) {
+      await prisma.asistencia.deleteMany({
+        where: { ninoId: params.id }
+      })
+    }
+
+    // Eliminar evaluaciones
+    if (nino.evaluaciones.length > 0) {
+      await prisma.evaluacion.deleteMany({
+        where: { ninoId: params.id }
+      })
+    }
+
+    // Eliminar relaciones con equipos
+    if (nino.equipoJugadores.length > 0) {
+      await prisma.equipoJugador.deleteMany({
+        where: { ninoId: params.id }
+      })
+    }
+
+    // Eliminar estadísticas del jugador
+    if (nino.estadisticasJugador.length > 0) {
+      await prisma.estadisticaJugador.deleteMany({
+        where: { ninoId: params.id }
+      })
+    }
+
+    // Finalmente, eliminar el niño
     await prisma.nino.delete({
       where: { id: params.id }
     })
 
     return NextResponse.json({ message: 'Niño eliminado correctamente' })
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error al eliminar niño:', error)
+    
+    // Proporcionar mensajes de error más específicos
+    if (error.code === 'P2025') {
+      return NextResponse.json(
+        { error: 'Niño no encontrado' },
+        { status: 404 }
+      )
+    }
+
     return NextResponse.json(
-      { error: 'Error interno del servidor' },
+      { 
+        error: 'Error al eliminar niño',
+        details: error.message || 'Error interno del servidor'
+      },
       { status: 500 }
     )
   }
