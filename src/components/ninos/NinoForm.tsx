@@ -66,10 +66,19 @@ export const NinoForm: React.FC<NinoFormProps> = ({
   }
 
   return (
-    <VStack spacing={6} p={8} bg="gray.50" borderRadius="xl" border="1px solid" borderColor="gray.200" overflow="hidden" maxW="100%">
-      <HStack spacing={6} width="full">
-        <FormControl isRequired>
-          <FormLabel fontSize="sm" fontWeight="semibold" color="gray.700">👤 Nombre</FormLabel>
+    <VStack 
+      spacing={{ base: 4, md: 6 }} 
+      p={{ base: 4, md: 8 }} 
+      bg="gray.50" 
+      borderRadius="xl" 
+      border="1px solid" 
+      borderColor="gray.200" 
+      overflow="hidden" 
+      maxW="100%"
+    >
+      <HStack spacing={{ base: 3, md: 6 }} width="full" flexWrap={{ base: "wrap", md: "nowrap" }}>
+        <FormControl isRequired flex={{ base: "1 1 100%", md: "1 1 auto" }}>
+          <FormLabel fontSize={{ base: "xs", md: "sm" }} fontWeight="semibold" color="gray.700">👤 Nombre</FormLabel>
           <Input
             value={formData.nombre}
             onChange={(e) =>
@@ -77,11 +86,12 @@ export const NinoForm: React.FC<NinoFormProps> = ({
             }
             bg="white"
             borderColor="gray.300"
+            size={{ base: "sm", md: "md" }}
             _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px #3182ce" }}
           />
         </FormControl>
-        <FormControl isRequired>
-          <FormLabel fontSize="sm" fontWeight="semibold" color="gray.700">👤 Apellido</FormLabel>
+        <FormControl isRequired flex={{ base: "1 1 100%", md: "1 1 auto" }}>
+          <FormLabel fontSize={{ base: "xs", md: "sm" }} fontWeight="semibold" color="gray.700">👤 Apellido</FormLabel>
           <Input
             value={formData.apellido}
             onChange={(e) =>
@@ -89,103 +99,108 @@ export const NinoForm: React.FC<NinoFormProps> = ({
             }
             bg="white"
             borderColor="gray.300"
+            size={{ base: "sm", md: "md" }}
             _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px #3182ce" }}
           />
         </FormControl>
       </HStack>
 
-      <HStack spacing={6} width="full">
-        <FormControl isRequired>
-          <FormLabel fontSize="sm" fontWeight="semibold" color="gray.700">📅 Fecha de Nacimiento</FormLabel>
-          <Input
-            type="date"
-            value={formData.fechaNacimiento}
-            onChange={(e) => handleFechaChange(e.target.value)}
-            bg="white"
-            borderColor="gray.300"
-            _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px #3182ce" }}
-          />
-          {edadCalculada !== null && (
-            <Text fontSize="sm" color="blue.600" mt={1} fontWeight="medium">
-              📅 Edad calculada: <strong>{edadCalculada} años</strong>
-            </Text>
-          )}
-        </FormControl>
-        <FormControl>
-          <FormLabel fontSize="sm" fontWeight="semibold" color="gray.700">🆔 Cédula</FormLabel>
-          <Input
-            value={formData.cedula}
-            onChange={(e) =>
-              setFormData({ ...formData, cedula: e.target.value })
-            }
-            placeholder="V-12345678"
-            bg="white"
-            borderColor="gray.300"
-            _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px #3182ce" }}
-          />
-        </FormControl>
-      </HStack>
-
-      <HStack spacing={6} width="full">
-        <FormControl isRequired>
-          <FormLabel fontSize="sm" fontWeight="semibold" color="gray.700">🏆 Categoría</FormLabel>
-          <Select
-            value={formData.categoria}
-            onChange={(e) =>
-              setFormData({ ...formData, categoria: e.target.value })
-            }
-            isDisabled={categoriasDisponibles.length === 0 && formData.fechaNacimiento === ''}
-            bg="white"
-            borderColor="gray.300"
-            _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px #3182ce" }}
-          >
-            <option value="">
-              {categoriasDisponibles.length === 0 
-                ? "Seleccione fecha de nacimiento primero" 
-                : "Seleccionar categoría"}
-            </option>
-            {categoriasDisponibles.length > 0 ? (
-              categoriasDisponibles.map(categoria => (
-                <option key={categoria} value={categoria}>
-                  {categoria}
-                </option>
-              ))
-            ) : (
-              <>
-                <option value="Sub-6">Sub-6</option>
-                <option value="Sub-8">Sub-8</option>
-                <option value="Sub-10">Sub-10</option>
-                <option value="Sub-12">Sub-12</option>
-                <option value="Sub-14">Sub-14</option>
-                <option value="Sub-16">Sub-16</option>
-                <option value="Sub-18">Sub-18</option>
-              </>
+        <HStack spacing={{ base: 3, md: 6 }} width="full" flexWrap={{ base: "wrap", md: "nowrap" }}>
+          <FormControl isRequired flex={{ base: "1 1 100%", md: "1 1 auto" }}>
+            <FormLabel fontSize={{ base: "xs", md: "sm" }} fontWeight="semibold" color="gray.700">📅 Fecha de Nacimiento</FormLabel>
+            <Input
+              type="date"
+              value={formData.fechaNacimiento}
+              onChange={(e) => handleFechaChange(e.target.value)}
+              bg="white"
+              borderColor="gray.300"
+              size={{ base: "sm", md: "md" }}
+              _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px #3182ce" }}
+            />
+            {edadCalculada !== null && (
+              <Text fontSize={{ base: "xs", md: "sm" }} color="blue.600" mt={1} fontWeight="medium">
+                📅 Edad calculada: <strong>{edadCalculada} años</strong>
+              </Text>
             )}
-          </Select>
-          {categoriasDisponibles.length > 0 && (
-            <Text fontSize="sm" color="green.600" mt={1} fontWeight="medium">
-              ✅ Categorías válidas para {edadCalculada} años: {categoriasDisponibles.join(', ')}
-            </Text>
-          )}
-        </FormControl>
-        <FormControl isRequired>
-          <FormLabel fontSize="sm" fontWeight="semibold" color="gray.700">⭐ Nivel</FormLabel>
-          <Select
-            value={formData.nivel}
-            onChange={(e) =>
-              setFormData({ ...formData, nivel: e.target.value })
-            }
-            bg="white"
-            borderColor="gray.300"
-            _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px #3182ce" }}
-          >
-            <option value="">Seleccionar nivel</option>
-            <option value="Principiante">Principiante</option>
-            <option value="Intermedio">Intermedio</option>
-            <option value="Avanzado">Avanzado</option>
-          </Select>
-        </FormControl>
-      </HStack>
+          </FormControl>
+          <FormControl flex={{ base: "1 1 100%", md: "1 1 auto" }}>
+            <FormLabel fontSize={{ base: "xs", md: "sm" }} fontWeight="semibold" color="gray.700">🆔 Cédula</FormLabel>
+            <Input
+              value={formData.cedula}
+              onChange={(e) =>
+                setFormData({ ...formData, cedula: e.target.value })
+              }
+              placeholder="V-12345678"
+              bg="white"
+              borderColor="gray.300"
+              size={{ base: "sm", md: "md" }}
+              _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px #3182ce" }}
+            />
+          </FormControl>
+        </HStack>
+
+        <HStack spacing={{ base: 3, md: 6 }} width="full" flexWrap={{ base: "wrap", md: "nowrap" }}>
+          <FormControl isRequired flex={{ base: "1 1 100%", md: "1 1 auto" }}>
+            <FormLabel fontSize={{ base: "xs", md: "sm" }} fontWeight="semibold" color="gray.700">🏆 Categoría</FormLabel>
+            <Select
+              value={formData.categoria}
+              onChange={(e) =>
+                setFormData({ ...formData, categoria: e.target.value })
+              }
+              isDisabled={categoriasDisponibles.length === 0 && formData.fechaNacimiento === ''}
+              bg="white"
+              borderColor="gray.300"
+              size={{ base: "sm", md: "md" }}
+              _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px #3182ce" }}
+            >
+              <option value="">
+                {categoriasDisponibles.length === 0 
+                  ? "Seleccione fecha de nacimiento primero" 
+                  : "Seleccionar categoría"}
+              </option>
+              {categoriasDisponibles.length > 0 ? (
+                categoriasDisponibles.map(categoria => (
+                  <option key={categoria} value={categoria}>
+                    {categoria}
+                  </option>
+                ))
+              ) : (
+                <>
+                  <option value="Sub-6">Sub-6</option>
+                  <option value="Sub-8">Sub-8</option>
+                  <option value="Sub-10">Sub-10</option>
+                  <option value="Sub-12">Sub-12</option>
+                  <option value="Sub-14">Sub-14</option>
+                  <option value="Sub-16">Sub-16</option>
+                  <option value="Sub-18">Sub-18</option>
+                </>
+              )}
+            </Select>
+            {categoriasDisponibles.length > 0 && (
+              <Text fontSize={{ base: "xs", md: "sm" }} color="green.600" mt={1} fontWeight="medium">
+                ✅ Categorías válidas para {edadCalculada} años: {categoriasDisponibles.join(', ')}
+              </Text>
+            )}
+          </FormControl>
+          <FormControl isRequired flex={{ base: "1 1 100%", md: "1 1 auto" }}>
+            <FormLabel fontSize={{ base: "xs", md: "sm" }} fontWeight="semibold" color="gray.700">⭐ Nivel</FormLabel>
+            <Select
+              value={formData.nivel}
+              onChange={(e) =>
+                setFormData({ ...formData, nivel: e.target.value })
+              }
+              bg="white"
+              borderColor="gray.300"
+              size={{ base: "sm", md: "md" }}
+              _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px #3182ce" }}
+            >
+              <option value="">Seleccionar nivel</option>
+              <option value="Principiante">Principiante</option>
+              <option value="Intermedio">Intermedio</option>
+              <option value="Avanzado">Avanzado</option>
+            </Select>
+          </FormControl>
+        </HStack>
 
       {!hideRepresentanteSelector && (
         <FormControl isRequired>
@@ -211,10 +226,15 @@ export const NinoForm: React.FC<NinoFormProps> = ({
 
       {/* Medidas físicas iniciales */}
       <VStack spacing={3} width="full" align="stretch">
-        <Text fontWeight="bold" fontSize="lg" color="gray.700">📏 Medidas iniciales (opcional)</Text>
-        <HStack spacing={4}>
+        <Text fontWeight="bold" fontSize={{ base: "md", md: "lg" }} color="gray.700">📏 Medidas iniciales (opcional)</Text>
+        <Box
+          display="grid"
+          gridTemplateColumns={{ base: "1fr", md: "repeat(2, 1fr)", lg: "repeat(4, 1fr)" }}
+          gap={{ base: 3, md: 4 }}
+          width="full"
+        >
           <FormControl>
-            <FormLabel fontSize="sm" fontWeight="semibold" color="gray.700">Estatura (cm)</FormLabel>
+            <FormLabel fontSize={{ base: "xs", md: "sm" }} fontWeight="semibold" color="gray.700">Estatura (cm)</FormLabel>
             <Input
               type="number"
               step="0.1"
@@ -223,10 +243,11 @@ export const NinoForm: React.FC<NinoFormProps> = ({
               onChange={(e) => setFormData({ ...formData, estatura: e.target.value })}
               bg="white"
               borderColor="gray.300"
+              size={{ base: "sm", md: "md" }}
             />
           </FormControl>
           <FormControl>
-            <FormLabel fontSize="sm" fontWeight="semibold" color="gray.700">Peso (kg)</FormLabel>
+            <FormLabel fontSize={{ base: "xs", md: "sm" }} fontWeight="semibold" color="gray.700">Peso (kg)</FormLabel>
             <Input
               type="number"
               step="0.1"
@@ -235,16 +256,18 @@ export const NinoForm: React.FC<NinoFormProps> = ({
               onChange={(e) => setFormData({ ...formData, peso: e.target.value })}
               bg="white"
               borderColor="gray.300"
+              size={{ base: "sm", md: "md" }}
             />
           </FormControl>
           <FormControl>
-            <FormLabel fontSize="sm" fontWeight="semibold" color="gray.700">Talla</FormLabel>
+            <FormLabel fontSize={{ base: "xs", md: "sm" }} fontWeight="semibold" color="gray.700">Talla</FormLabel>
             <Select
               placeholder="Seleccionar"
               value={formData.talla || ''}
               onChange={(e) => setFormData({ ...formData, talla: e.target.value })}
               bg="white"
               borderColor="gray.300"
+              size={{ base: "sm", md: "md" }}
             >
               {/* Tallas infantiles numéricas */}
               <option value="6">6</option>
@@ -260,13 +283,14 @@ export const NinoForm: React.FC<NinoFormProps> = ({
             </Select>
           </FormControl>
           <FormControl>
-            <FormLabel fontSize="sm" fontWeight="semibold" color="gray.700">Talla de Calzado</FormLabel>
+            <FormLabel fontSize={{ base: "xs", md: "sm" }} fontWeight="semibold" color="gray.700">Talla de Calzado</FormLabel>
             <Select
               placeholder="Seleccionar"
               value={formData.tallaCalzado || ''}
               onChange={(e) => setFormData({ ...formData, tallaCalzado: e.target.value })}
               bg="white"
               borderColor="gray.300"
+              size={{ base: "sm", md: "md" }}
             >
               <option value="33">33</option>
               <option value="34">34</option>
@@ -281,43 +305,51 @@ export const NinoForm: React.FC<NinoFormProps> = ({
               <option value="43">43</option>
             </Select>
           </FormControl>
-        </HStack>
+        </Box>
       </VStack>
 
       {/* Reconocimiento Facial */}
       <FormControl>
-        <FormLabel fontSize="sm" fontWeight="semibold" color="gray.700">📸 Reconocimiento Facial (Opcional)</FormLabel>
+        <FormLabel fontSize={{ base: "xs", md: "sm" }} fontWeight="semibold" color="gray.700">📸 Reconocimiento Facial (Opcional)</FormLabel>
         <VStack spacing={3} align="stretch">
           <Button
             onClick={onFacialRecognition}
             colorScheme="purple"
             variant="outline"
             leftIcon={<FiCamera />}
-            size="md"
+            size={{ base: "sm", md: "md" }}
             bg="white"
             borderColor="purple.300"
             _hover={{ bg: "purple.50", borderColor: "purple.400" }}
+            width="100%"
           >
             Capturar con Reconocimiento Facial
           </Button>
           {formData.faceImageUrl && (
             <Box p={3} bg="green.50" borderRadius="md" border="1px solid" borderColor="green.200">
-              <Text fontSize="sm" color="green.700" mb={2} fontWeight="medium">
+              <Text fontSize={{ base: "xs", md: "sm" }} color="green.700" mb={2} fontWeight="medium">
                 ✅ Foto facial capturada y verificada
               </Text>
               <img
                 src={formData.faceImageUrl}
                 alt="Foto facial"
-                style={{ maxWidth: '150px', maxHeight: '100px', objectFit: 'cover', borderRadius: '8px' }}
+                style={{ 
+                  maxWidth: '100%', 
+                  maxHeight: '150px', 
+                  width: 'auto',
+                  height: 'auto',
+                  objectFit: 'cover', 
+                  borderRadius: '8px' 
+                }}
               />
             </Box>
           )}
         </VStack>
       </FormControl>
 
-      <HStack spacing={6} width="full">
+      <VStack spacing={{ base: 3, md: 6 }} width="full">
         <FormControl>
-          <FormLabel fontSize="sm" fontWeight="semibold" color="gray.700">⚠️ Alergias</FormLabel>
+          <FormLabel fontSize={{ base: "xs", md: "sm" }} fontWeight="semibold" color="gray.700">⚠️ Alergias</FormLabel>
           <Input
             value={formData.alergias}
             onChange={(e) =>
@@ -326,11 +358,12 @@ export const NinoForm: React.FC<NinoFormProps> = ({
             placeholder="Especificar alergias si las tiene"
             bg="white"
             borderColor="gray.300"
+            size={{ base: "sm", md: "md" }}
             _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px #3182ce" }}
           />
         </FormControl>
         <FormControl>
-          <FormLabel fontSize="sm" fontWeight="semibold" color="gray.700">🚨 Contacto de Emergencia</FormLabel>
+          <FormLabel fontSize={{ base: "xs", md: "sm" }} fontWeight="semibold" color="gray.700">🚨 Contacto de Emergencia</FormLabel>
           <Input
             value={formData.emergencia}
             onChange={(e) =>
@@ -339,25 +372,26 @@ export const NinoForm: React.FC<NinoFormProps> = ({
             placeholder="Teléfono de emergencia"
             bg="white"
             borderColor="gray.300"
+            size={{ base: "sm", md: "md" }}
             _focus={{ borderColor: "blue.400", boxShadow: "0 0 0 1px #3182ce" }}
           />
         </FormControl>
-      </HStack>
+      </VStack>
 
       {/* Carga de archivos - Compacta */}
       <VStack spacing={3} width="full">
-        <Text fontWeight="bold" fontSize="lg" color="gray.700">📄 Documentos</Text>
+        <Text fontWeight="bold" fontSize={{ base: "md", md: "lg" }} color="gray.700">📄 Documentos</Text>
         
         {/* Grid para los dos primeros documentos */}
         <Box 
           display="grid" 
-          gridTemplateColumns="1fr 1fr" 
-          gap={4} 
+          gridTemplateColumns={{ base: "1fr", md: "1fr 1fr" }}
+          gap={{ base: 3, md: 4 }} 
           width="full"
           maxW="100%"
         >
           <FormControl>
-            <FormLabel fontSize="sm" color="gray.600">Cédula del Niño</FormLabel>
+            <FormLabel fontSize={{ base: "xs", md: "sm" }} color="gray.600">Cédula del Niño</FormLabel>
             <FileUpload
               onFileUploaded={(fileUrl, fileName) =>
                 setFormData({ ...formData, cedulaFile: fileUrl })
@@ -369,7 +403,7 @@ export const NinoForm: React.FC<NinoFormProps> = ({
             />
           </FormControl>
           <FormControl>
-            <FormLabel fontSize="sm" color="gray.600">Partida de Nacimiento</FormLabel>
+            <FormLabel fontSize={{ base: "xs", md: "sm" }} color="gray.600">Partida de Nacimiento</FormLabel>
             <FileUpload
               onFileUploaded={(fileUrl, fileName) =>
                 setFormData({ ...formData, partidaFile: fileUrl })
@@ -383,7 +417,7 @@ export const NinoForm: React.FC<NinoFormProps> = ({
         </Box>
 
         <FormControl>
-          <FormLabel fontSize="sm" color="gray.600">Foto del Niño</FormLabel>
+          <FormLabel fontSize={{ base: "xs", md: "sm" }} color="gray.600">Foto del Niño</FormLabel>
           <FileUpload
             onFileUploaded={(fileUrl, fileName) =>
               setFormData({ ...formData, fotoFile: fileUrl })
@@ -397,14 +431,23 @@ export const NinoForm: React.FC<NinoFormProps> = ({
         </FormControl>
       </VStack>
 
-      <FormControl display="flex" alignItems="center" bg="white" p={4} borderRadius="md" border="1px solid" borderColor="gray.200">
-        <FormLabel mb="0" fontSize="sm" fontWeight="semibold" color="gray.700">✅ Activo</FormLabel>
+      <FormControl 
+        display="flex" 
+        alignItems="center" 
+        bg="white" 
+        p={{ base: 3, md: 4 }} 
+        borderRadius="md" 
+        border="1px solid" 
+        borderColor="gray.200"
+      >
+        <FormLabel mb="0" fontSize={{ base: "xs", md: "sm" }} fontWeight="semibold" color="gray.700">✅ Activo</FormLabel>
         <Switch
           isChecked={formData.activo}
           onChange={(e) =>
             setFormData({ ...formData, activo: e.target.checked })
           }
           colorScheme="green"
+          size={{ base: "sm", md: "md" }}
         />
       </FormControl>
 
@@ -414,7 +457,7 @@ export const NinoForm: React.FC<NinoFormProps> = ({
           colorScheme="blue"
           width="full"
           isLoading={isLoading}
-          size="lg"
+          size={{ base: "md", md: "lg" }}
           fontWeight="semibold"
           bg="blue.500"
           _hover={{ bg: "blue.600" }}

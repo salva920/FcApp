@@ -497,14 +497,24 @@ export default React.memo(function NinosPage() {
         getNivelColor={getNivelColor}
       />
 
-      <Modal isOpen={isOpen} onClose={onClose} size="4xl">
+      <Modal 
+        isOpen={isOpen} 
+        onClose={onClose} 
+        size={{ base: "full", md: "4xl" }}
+        motionPreset="slideInBottom"
+        scrollBehavior="inside"
+      >
         <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>
+        <ModalContent 
+          mx={{ base: 0, md: "auto" }} 
+          maxH={{ base: "100vh", md: "90vh" }}
+          my={{ base: 0, md: "auto" }}
+        >
+          <ModalHeader fontSize={{ base: "md", md: "lg" }}>
             {selectedNino ? 'Editar Niño' : 'Registrar Nuevo Niño'}
           </ModalHeader>
           <ModalCloseButton />
-          <ModalBody>
+          <ModalBody px={{ base: 4, md: 6 }} pb={{ base: 4, md: 6 }}>
             <form onSubmit={handleFormSubmit}>
               <NinoForm
                 formData={formData}

@@ -100,11 +100,25 @@ export default function FacialRecognition({
             box.height !== null && box.height !== undefined &&
             box.width > 0 && box.height > 0) {
           setFaceDetected(true)
+          
+          // Ajustar coordenadas según el tamaño real del video renderizado
+          const videoElement = video
+          const videoWidth = videoElement.videoWidth
+          const videoHeight = videoElement.videoHeight
+          
+          // Obtener el tamaño renderizado del video
+          const containerWidth = videoElement.clientWidth || videoWidth
+          const containerHeight = videoElement.clientHeight || videoHeight
+          
+          // Calcular escala solo si hay diferencia
+          const scaleX = videoWidth > 0 ? containerWidth / videoWidth : 1
+          const scaleY = videoHeight > 0 ? containerHeight / videoHeight : 1
+          
           setDetectionBox({
-            x: box.x,
-            y: box.y,
-            width: box.width,
-            height: box.height
+            x: box.x * scaleX,
+            y: box.y * scaleY,
+            width: box.width * scaleX,
+            height: box.height * scaleY
           })
         } else {
           setFaceDetected(false)
@@ -221,25 +235,34 @@ export default function FacialRecognition({
     setFaceDescriptor(null)
   }
 
+  // Detectar si es móvil para ajustar dimensiones
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
+  
   const videoConstraints = {
-    width: 640,
-    height: 480,
+    width: isMobile ? 320 : 640,
+    height: isMobile ? 240 : 480,
     facingMode: "user"
   }
 
   return (
-    <Modal isOpen onClose={onClose} size="xl" closeOnOverlayClick={false}>
+    <Modal 
+      isOpen 
+      onClose={onClose} 
+      size={{ base: "full", md: "xl" }}
+      closeOnOverlayClick={false}
+      motionPreset="slideInBottom"
+    >
       <ModalOverlay />
-      <ModalContent>
+      <ModalContent mx={{ base: 0, md: "auto" }} maxH={{ base: "100vh", md: "90vh" }} overflowY="auto">
         <ModalHeader>
           <HStack>
             <FiCamera />
-            <Text>{title}</Text>
+            <Text fontSize={{ base: "md", md: "lg" }}>{title}</Text>
           </HStack>
         </ModalHeader>
         <ModalCloseButton />
         
-        <ModalBody pb={6}>
+        <ModalBody pb={6} px={{ base: 4, md: 6 }}>
           <VStack spacing={4}>
             <Text color="gray.600" textAlign="center">
               {description}
@@ -269,48 +292,72 @@ export default function FacialRecognition({
             )}
 
             {modelsLoaded && !capturedPhoto && (
-              <Box position="relative" borderRadius="lg" overflow="hidden">
-                <Webcam
-                  ref={webcamRef}
-                  audio={false}
-                  screenshotFormat="image/jpeg"
-                  width={640}
-                  height={480}
-                  videoConstraints={videoConstraints}
-                />
-                
-                {/* Overlay de detección facial */}
-                {detectionBox && faceDetected && (
-                  <Box
-                    position="absolute"
-                    top={`${Math.max(0, detectionBox.y)}px`}
-                    left={`${Math.max(0, detectionBox.x)}px`}
-                    width={`${Math.min(detectionBox.width, 640)}px`}
-                    height={`${Math.min(detectionBox.height, 480)}px`}
-                    border="4px solid"
-                    borderColor="green.500"
-                    borderRadius="xl"
-                    pointerEvents="none"
-                    boxShadow="0 0 20px rgba(34, 197, 94, 0.5)"
-                    transition="all 0.1s ease"
-                    zIndex={10}
+              <Box 
+                position="relative" 
+                borderRadius="lg" 
+                overflow="hidden"
+                width="100%"
+                maxW={{ base: "100%", md: "640px" }}
+                mx="auto"
+              >
+                <Box
+                  position="relative"
+                  width="100%"
+                  bg="black"
+                  borderRadius="lg"
+                >
+                  <Webcam
+                    ref={webcamRef}
+                    audio={false}
+                    screenshotFormat="image/jpeg"
+                    videoConstraints={videoConstraints}
+                    style={{
+                      width: "100%",
+                      height: "auto",
+                      display: "block"
+                    }}
                   />
-                )}
+                  
+                  {/* Overlay de detección facial */}
+                  {detectionBox && faceDetected && webcamRef.current?.video && (
+                    <Box
+                      position="absolute"
+                      top={`${Math.max(0, detectionBox.y)}px`}
+                      left={`${Math.max(0, detectionBox.x)}px`}
+                      width={`${detectionBox.width}px`}
+                      height={`${detectionBox.height}px`}
+                      border="4px solid"
+                      borderColor="green.500"
+                      borderRadius="xl"
+                      pointerEvents="none"
+                      boxShadow="0 0 20px rgba(34, 197, 94, 0.5)"
+                      transition="all 0.1s ease"
+                      zIndex={10}
+                    />
+                  )}
+                </Box>
               </Box>
             )}
 
             {capturedPhoto && (
-              <VStack spacing={4}>
-                <Image
-                  src={capturedPhoto}
-                  alt="Foto capturada"
-                  borderRadius="lg"
-                  maxW="400px"
-                  maxH="300px"
-                  objectFit="cover"
-                />
+              <VStack spacing={4} width="100%">
+                <Box
+                  width="100%"
+                  maxW={{ base: "100%", md: "400px" }}
+                  mx="auto"
+                >
+                  <Image
+                    src={capturedPhoto}
+                    alt="Foto capturada"
+                    borderRadius="lg"
+                    width="100%"
+                    height="auto"
+                    maxH="300px"
+                    objectFit="cover"
+                  />
+                </Box>
                 <HStack>
-                  <Badge colorScheme="green" variant="solid">
+                  <Badge colorScheme="green" variant="solid" fontSize={{ base: "xs", md: "sm" }}>
                     <HStack spacing={1}>
                       <FiCheck />
                       <Text>Rostro detectado</Text>
@@ -321,9 +368,9 @@ export default function FacialRecognition({
             )}
 
             {/* Estados de la cámara */}
-            <HStack spacing={4} justify="center">
+            <HStack spacing={2} justify="center" flexWrap="wrap">
               {modelsLoaded && (
-                <Badge colorScheme="blue" variant="outline">
+                <Badge colorScheme="blue" variant="outline" fontSize={{ base: "xs", md: "sm" }}>
                   <HStack spacing={1}>
                     <FiCheck />
                     <Text>Modelos cargados</Text>
@@ -332,7 +379,7 @@ export default function FacialRecognition({
               )}
               
               {faceDetected && !capturedPhoto && (
-                <Badge colorScheme="green" variant="solid">
+                <Badge colorScheme="green" variant="solid" fontSize={{ base: "xs", md: "sm" }}>
                   <HStack spacing={1}>
                     <FiUser />
                     <Text>Rostro detectado</Text>
@@ -341,7 +388,7 @@ export default function FacialRecognition({
               )}
               
               {!faceDetected && modelsLoaded && !capturedPhoto && (
-                <Badge colorScheme="orange" variant="solid">
+                <Badge colorScheme="orange" variant="solid" fontSize={{ base: "xs", md: "sm" }}>
                   <HStack spacing={1}>
                     <FiAlertCircle />
                     <Text>Posicione su rostro</Text>
@@ -351,56 +398,80 @@ export default function FacialRecognition({
             </HStack>
 
             {/* Botones de acción */}
-            <HStack spacing={4}>
-              {!capturedPhoto && (
-                <Button
-                  onClick={capturePhoto}
-                  colorScheme="blue"
-                  leftIcon={<FiCamera />}
-                  isDisabled={!faceDetected || !modelsLoaded || isCapturing}
-                  isLoading={isCapturing}
-                >
-                  Capturar Foto
-                </Button>
-              )}
-              
-              {capturedPhoto && (
-                <>
+            <VStack spacing={3} width="100%">
+              <HStack spacing={2} width="100%" flexWrap="wrap" justify="center">
+                {!capturedPhoto && (
                   <Button
-                    onClick={confirmPhoto}
-                    colorScheme="green"
-                    leftIcon={<FiCheck />}
+                    onClick={capturePhoto}
+                    colorScheme="blue"
+                    leftIcon={<FiCamera />}
+                    isDisabled={!faceDetected || !modelsLoaded || isCapturing}
+                    isLoading={isCapturing}
+                    size={{ base: "md", md: "lg" }}
+                    width={{ base: "100%", md: "auto" }}
                   >
-                    Confirmar
+                    Capturar Foto
                   </Button>
-                  <Button
-                    onClick={retakePhoto}
-                    colorScheme="orange"
-                    leftIcon={<FiX />}
-                    variant="outline"
-                  >
-                    Repetir
-                  </Button>
-                </>
-              )}
+                )}
+                
+                {capturedPhoto && (
+                  <>
+                    <Button
+                      onClick={confirmPhoto}
+                      colorScheme="green"
+                      leftIcon={<FiCheck />}
+                      size={{ base: "md", md: "lg" }}
+                      flex={{ base: 1, md: "none" }}
+                      minW={{ base: "calc(50% - 4px)", md: "auto" }}
+                    >
+                      Confirmar
+                    </Button>
+                    <Button
+                      onClick={retakePhoto}
+                      colorScheme="orange"
+                      leftIcon={<FiX />}
+                      variant="outline"
+                      size={{ base: "md", md: "lg" }}
+                      flex={{ base: 1, md: "none" }}
+                      minW={{ base: "calc(50% - 4px)", md: "auto" }}
+                    >
+                      Repetir
+                    </Button>
+                  </>
+                )}
+              </HStack>
               
               <Button
                 onClick={onClose}
                 variant="ghost"
                 leftIcon={<FiX />}
+                size={{ base: "md", md: "lg" }}
+                width={{ base: "100%", md: "auto" }}
               >
                 Cancelar
               </Button>
-            </HStack>
+            </VStack>
 
             {/* Instrucciones */}
-            <Box bg="gray.50" p={4} borderRadius="md" fontSize="sm" color="gray.600">
-              <Text fontWeight="bold" mb={2}>Instrucciones:</Text>
+            <Box 
+              bg="gray.50" 
+              p={{ base: 3, md: 4 }} 
+              borderRadius="md" 
+              fontSize={{ base: "xs", md: "sm" }} 
+              color="gray.600"
+              width="100%"
+            >
+              <Text fontWeight="bold" mb={2} fontSize={{ base: "sm", md: "md" }}>Instrucciones:</Text>
               <VStack align="start" spacing={1}>
                 <Text>• Asegúrese de tener buena iluminación</Text>
                 <Text>• Mire directamente a la cámara</Text>
                 <Text>• Mantenga una expresión neutra</Text>
                 <Text>• Espere a que se detecte su rostro antes de capturar</Text>
+                {isMobile && (
+                  <Text fontWeight="semibold" color="blue.600" mt={2}>
+                    💡 En móvil: Mantenga el dispositivo estable y horizontal
+                  </Text>
+                )}
               </VStack>
             </Box>
           </VStack>
