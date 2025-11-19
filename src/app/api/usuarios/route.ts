@@ -24,20 +24,26 @@ async function getUserFromToken(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    // Verificar que el usuario es admin
     const currentUser = await getUserFromToken(request)
-    if (!currentUser || currentUser.rol !== 'admin') {
+    if (!currentUser) {
       return NextResponse.json(
-        { error: 'No autorizado. Solo administradores pueden ver usuarios.' },
-        { status: 403 }
+        { error: 'No autorizado' },
+        { status: 401 }
       )
     }
 
     const { searchParams } = new URL(request.url)
     const rol = searchParams.get('rol') // Filtrar por rol si se especifica
 
-    const where: any = {}
-    if (rol) where.rol = rol
+    const where: any = {
+      activo: true
+    }
+    if (rol && rol !== '') where.rol = rol
+    
+    // Si no es admin, solo puede ver usuarios activos
+    if (currentUser.rol !== 'admin') {
+      // Los usuarios no admin solo pueden ver usuarios para chat (sin restricción de rol)
+    }
 
     const usuarios = await prisma.usuario.findMany({
       where,
@@ -49,6 +55,8 @@ export async function GET(request: NextRequest) {
         categoria: true,
         activo: true,
         createdAt: true,
+        representanteId: true,
+        instructorId: true,
         representante: {
           select: {
             id: true,

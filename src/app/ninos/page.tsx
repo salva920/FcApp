@@ -333,7 +333,8 @@ export default React.memo(function NinosPage() {
           const uploadResult = await uploadResponse.json()
           
           // Actualizar el formulario con la URL del archivo subido y el descriptor facial
-          const descriptorBase64 = Buffer.from(JSON.stringify(Array.from(dataToUse.faceDescriptor))).toString('base64')
+          // Convertir Float32Array a Base64 usando función helper del navegador
+          const descriptorBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(Array.from(dataToUse.faceDescriptor)))))
           
           setFormData(prev => ({
             ...prev,

@@ -27,7 +27,8 @@ import {
   FiBell,
   FiSettings,
   FiAward,
-  FiGrid
+  FiGrid,
+  FiMessageCircle
 } from 'react-icons/fi'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
@@ -129,6 +130,7 @@ export default function Navbar() {
                     <MenuItem icon={<FiDollarSign />} as={Link} href="/pago-publico">Pagos</MenuItem>
                     <MenuItem icon={<FiCalendar />} as={Link} href="/calendario">Calendario</MenuItem>
                     <MenuItem icon={<FiShoppingBag />} as={Link} href="/tienda">Tienda</MenuItem>
+                    <MenuItem icon={<FiMessageCircle />} as={Link} href="/comunicacion">Centro de Comunicación</MenuItem>
                   </MenuGroup>
                   <MenuDivider />
                 </>
@@ -142,6 +144,7 @@ export default function Navbar() {
                     <MenuItem icon={<FiCalendar />} as={Link} href="/calendario">Calendario</MenuItem>
                     <MenuItem icon={<FiBell />} as={Link} href="/notificaciones">Notificaciones</MenuItem>
                     <MenuItem icon={<FiShoppingBag />} as={Link} href="/tienda">Tienda</MenuItem>
+                    <MenuItem icon={<FiMessageCircle />} as={Link} href="/comunicacion">Centro de Comunicación</MenuItem>
                   </MenuGroup>
                   <MenuDivider />
                 </>
@@ -158,7 +161,9 @@ export default function Navbar() {
                     <MenuItem icon={<FiCamera />} as={Link} href="/checkin">Check-in</MenuItem>
                     <MenuItem icon={<FiBell />} as={Link} href="/notificaciones">Notificaciones</MenuItem>
                     <MenuItem icon={<FiShoppingBag />} as={Link} href="/tienda">Tienda</MenuItem>
+                    <MenuItem icon={<FiMessageCircle />} as={Link} href="/comunicacion">Centro de Comunicación</MenuItem>
                     <MenuItem icon={<FiBarChart />} as={Link} href="/dashboard">Dashboard</MenuItem>
+                    <MenuItem icon={<FiBarChart />} as={Link} href="/reportes">Reportes</MenuItem>
                   </MenuGroup>
                 </>
               )}

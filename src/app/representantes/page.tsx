@@ -44,7 +44,8 @@ import {
   IconButton,
   Stack,
   SimpleGrid,
-  Select
+  Select,
+  useBreakpointValue
 } from '@chakra-ui/react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { FiPlus, FiEdit2, FiTrash2, FiSearch, FiUser, FiDollarSign, FiUsers, FiChevronLeft, FiChevronRight, FiShield } from 'react-icons/fi'
@@ -408,7 +409,8 @@ export default function RepresentantesPage() {
           const uploadResult = await uploadResponse.json()
           
           // Actualizar el formulario con la URL del archivo subido y el descriptor facial
-          const descriptorBase64 = Buffer.from(JSON.stringify(Array.from(dataToUse.faceDescriptor))).toString('base64')
+          // Convertir Float32Array a Base64 usando función helper del navegador
+          const descriptorBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(Array.from(dataToUse.faceDescriptor)))))
           
           setNinoFormData(prev => ({
             ...prev,
@@ -688,140 +690,309 @@ export default function RepresentantesPage() {
         </FormControl>
       </Box>
 
-      <Box overflowX="auto">
-        <Table variant="simple" size="md" minW="760px">
-          <Thead>
-            <Tr>
-              <Th>Representante</Th>
-              <Th>Contacto</Th>
-              <Th>Rol</Th>
-              <Th>Niños</Th>
-              <Th>Estado de Pagos</Th>
-              <Th>Monto Pendiente</Th>
-              <Th>Acciones</Th>
-            </Tr>
-          </Thead>
-          <Tbody>
-            {filteredRepresentantes?.map((representante) => (
-              <Tr key={representante.id}>
-                <Td>
-                  <VStack align="start" spacing={1}>
-                    <Text fontWeight="bold">{representante.nombre}</Text>
-                    <Text fontSize="sm" color="gray.500">{representante.cedula}</Text>
-                    {representante.direccion && (
-                      <Text fontSize="xs" color="gray.400">{representante.direccion}</Text>
-                    )}
-                  </VStack>
-                </Td>
-                <Td>
-                  <VStack align="start" spacing={1}>
-                    <Text fontSize="sm">{representante.email}</Text>
-                    <Text fontSize="sm">{representante.telefono}</Text>
-                  </VStack>
-                </Td>
-                <Td>
-                  <VStack align="start" spacing={1}>
-                    {representante.usuarios && representante.usuarios.length > 0 ? (
-                      representante.usuarios.map((usuario) => (
-                        <VStack key={usuario.id} align="start" spacing={1}>
-                          <HStack spacing={2}>
-                            <Badge
-                              colorScheme={
-                                usuario.rol === 'representante-delegado' ? 'purple' :
-                                usuario.rol === 'representante' ? 'green' : 'gray'
-                              }
-                            >
-                              {usuario.rol === 'representante-delegado' ? 'Representante Delegado' :
-                               usuario.rol === 'representante' ? 'Representante' : usuario.rol}
-                            </Badge>
-                            {isAdmin && (
-                              <IconButton
-                                aria-label="Cambiar rol"
-                                icon={<FiShield />}
-                                size="xs"
-                                variant="ghost"
-                                colorScheme="blue"
-                                onClick={() => {
-                                  setSelectedUsuario(usuario)
-                                  setRolData({ rol: usuario.rol, categoria: usuario.categoria || '' })
-                                  onRolOpen()
-                                }}
-                              />
-                            )}
-                          </HStack>
-                          {usuario.rol === 'representante-delegado' && usuario.categoria && (
-                            <Badge colorScheme="blue" fontSize="xs">
-                              Categoría: {usuario.categoria}
-                            </Badge>
+      {(() => {
+        const showTable = useBreakpointValue({ base: false, lg: true })
+
+        // Vista de Cards para móvil
+        if (!showTable) {
+          return (
+            <SimpleGrid columns={{ base: 1, sm: 2 }} spacing={4}>
+              {filteredRepresentantes?.map((representante) => (
+                <Card key={representante.id} size="sm">
+                  <CardBody>
+                    <VStack align="stretch" spacing={3}>
+                      {/* Header con nombre y estado de pagos */}
+                      <HStack justify="space-between" align="start">
+                        <VStack align="start" spacing={1} flex={1}>
+                          <Text fontWeight="bold" fontSize="lg">
+                            {representante.nombre}
+                          </Text>
+                          <Text fontSize="xs" color="gray.500">
+                            {representante.cedula}
+                          </Text>
+                          {representante.direccion && (
+                            <Text fontSize="xs" color="gray.400">
+                              {representante.direccion}
+                            </Text>
                           )}
                         </VStack>
-                      ))
-                    ) : (
-                      <Badge colorScheme="gray">Sin usuario</Badge>
-                    )}
-                  </VStack>
-                </Td>
-                <Td>
-                  <VStack align="start" spacing={1}>
-                    <Text fontWeight="bold">{representante._count.ninos}</Text>
-                    {representante.ninos.map((nino, index) => (
-                      <Text key={index} fontSize="xs" color="gray.500">
-                        {nino.nombre} {nino.apellido} ({nino.categoria})
+                        <Badge 
+                          colorScheme={calculatePagosPendientes(representante.pagos) > 0 ? 'red' : 'green'}
+                        >
+                          {calculatePagosPendientes(representante.pagos) > 0 ? 'Deudor' : 'Al día'}
+                        </Badge>
+                      </HStack>
+
+                      <Divider />
+
+                      {/* Contacto */}
+                      <Box>
+                        <Text fontSize="sm" color="gray.600" mb={1}>Contacto:</Text>
+                        <VStack align="start" spacing={0.5}>
+                          <Text fontSize="sm">{representante.email}</Text>
+                          <Text fontSize="sm">{representante.telefono}</Text>
+                        </VStack>
+                      </Box>
+
+                      <Divider />
+
+                      {/* Rol */}
+                      <Box>
+                        <Text fontSize="sm" color="gray.600" mb={1}>Rol:</Text>
+                        {representante.usuarios && representante.usuarios.length > 0 ? (
+                          <VStack align="start" spacing={1}>
+                            {representante.usuarios.map((usuario) => (
+                              <VStack key={usuario.id} align="start" spacing={1}>
+                                <HStack spacing={2}>
+                                  <Badge
+                                    colorScheme={
+                                      usuario.rol === 'representante-delegado' ? 'purple' :
+                                      usuario.rol === 'representante' ? 'green' : 'gray'
+                                    }
+                                  >
+                                    {usuario.rol === 'representante-delegado' ? 'Representante Delegado' :
+                                     usuario.rol === 'representante' ? 'Representante' : usuario.rol}
+                                  </Badge>
+                                  {isAdmin && (
+                                    <IconButton
+                                      aria-label="Cambiar rol"
+                                      icon={<FiShield />}
+                                      size="xs"
+                                      variant="ghost"
+                                      colorScheme="blue"
+                                      onClick={() => {
+                                        setSelectedUsuario(usuario)
+                                        setRolData({ rol: usuario.rol, categoria: usuario.categoria || '' })
+                                        onRolOpen()
+                                      }}
+                                    />
+                                  )}
+                                </HStack>
+                                {usuario.rol === 'representante-delegado' && usuario.categoria && (
+                                  <Badge colorScheme="blue" fontSize="xs">
+                                    Categoría: {usuario.categoria}
+                                  </Badge>
+                                )}
+                              </VStack>
+                            ))}
+                          </VStack>
+                        ) : (
+                          <Badge colorScheme="gray">Sin usuario</Badge>
+                        )}
+                      </Box>
+
+                      <Divider />
+
+                      {/* Niños y Pagos */}
+                      <SimpleGrid columns={2} spacing={3}>
+                        <Box>
+                          <Text fontSize="sm" color="gray.600" mb={1}>Niños:</Text>
+                          <Text fontWeight="bold" fontSize="lg">
+                            {representante._count.ninos}
+                          </Text>
+                          {representante.ninos.length > 0 && (
+                            <VStack align="start" spacing={0.5} mt={1}>
+                              {representante.ninos.slice(0, 2).map((nino, index) => (
+                                <Text key={index} fontSize="xs" color="gray.500">
+                                  {nino.nombre} {nino.apellido}
+                                </Text>
+                              ))}
+                              {representante.ninos.length > 2 && (
+                                <Text fontSize="xs" color="gray.400">
+                                  +{representante.ninos.length - 2} más
+                                </Text>
+                              )}
+                            </VStack>
+                          )}
+                        </Box>
+                        <Box>
+                          <Text fontSize="sm" color="gray.600" mb={1}>Monto Pendiente:</Text>
+                          <Text 
+                            fontWeight="bold" 
+                            fontSize="lg"
+                            color={calculateMontoPendiente(representante.pagos) > 0 ? 'red.500' : 'green.500'}
+                          >
+                            ${calculateMontoPendiente(representante.pagos).toFixed(2)}
+                          </Text>
+                          <Text fontSize="xs" color="gray.500" mt={1}>
+                            {representante._count.pagos} pagos
+                          </Text>
+                        </Box>
+                      </SimpleGrid>
+
+                      <Divider />
+
+                      {/* Acciones */}
+                      <VStack spacing={2} align="stretch">
+                        <Stack direction="row" spacing={2}>
+                          <Button
+                            size="sm"
+                            leftIcon={<FiEdit2 />}
+                            onClick={() => handleEdit(representante)}
+                            flex={1}
+                          >
+                            Editar
+                          </Button>
+                          <Button
+                            size="sm"
+                            leftIcon={<FiTrash2 />}
+                            colorScheme="red"
+                            onClick={() => handleDelete(representante.id)}
+                            isDisabled={representante._count.ninos > 0}
+                            flex={1}
+                          >
+                            Eliminar
+                          </Button>
+                        </Stack>
+                      </VStack>
+                    </VStack>
+                  </CardBody>
+                </Card>
+              ))}
+            </SimpleGrid>
+          )
+        }
+
+        // Vista de Tabla para desktop
+        return (
+          <Box overflowX="auto">
+            <Table variant="simple" size="md" minW="1000px">
+              <Thead>
+                <Tr>
+                  <Th>Representante</Th>
+                  <Th>Contacto</Th>
+                  <Th>Rol</Th>
+                  <Th>Niños</Th>
+                  <Th>Estado</Th>
+                  <Th>Monto Pendiente</Th>
+                  <Th>Acciones</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
+                {filteredRepresentantes?.map((representante) => (
+                  <Tr key={representante.id}>
+                    <Td>
+                      <VStack align="start" spacing={0.5}>
+                        <Text fontWeight="bold" fontSize="sm">{representante.nombre}</Text>
+                        <Text fontSize="xs" color="gray.500">{representante.cedula}</Text>
+                        {representante.direccion && (
+                          <Text fontSize="xs" color="gray.400">{representante.direccion}</Text>
+                        )}
+                      </VStack>
+                    </Td>
+                    <Td>
+                      <VStack align="start" spacing={0.5}>
+                        <Text fontSize="xs">{representante.email}</Text>
+                        <Text fontSize="xs" color="gray.500">{representante.telefono}</Text>
+                      </VStack>
+                    </Td>
+                    <Td>
+                      <VStack align="start" spacing={1}>
+                        {representante.usuarios && representante.usuarios.length > 0 ? (
+                          representante.usuarios.map((usuario) => (
+                            <VStack key={usuario.id} align="start" spacing={0.5}>
+                              <HStack spacing={1}>
+                                <Badge
+                                  colorScheme={
+                                    usuario.rol === 'representante-delegado' ? 'purple' :
+                                    usuario.rol === 'representante' ? 'green' : 'gray'
+                                  }
+                                  fontSize="xs"
+                                >
+                                  {usuario.rol === 'representante-delegado' ? 'Delegado' :
+                                   usuario.rol === 'representante' ? 'Representante' : usuario.rol}
+                                </Badge>
+                                {isAdmin && (
+                                  <IconButton
+                                    aria-label="Cambiar rol"
+                                    icon={<FiShield />}
+                                    size="xs"
+                                    variant="ghost"
+                                    colorScheme="blue"
+                                    onClick={() => {
+                                      setSelectedUsuario(usuario)
+                                      setRolData({ rol: usuario.rol, categoria: usuario.categoria || '' })
+                                      onRolOpen()
+                                    }}
+                                  />
+                                )}
+                              </HStack>
+                              {usuario.rol === 'representante-delegado' && usuario.categoria && (
+                                <Badge colorScheme="blue" fontSize="xs">
+                                  {usuario.categoria}
+                                </Badge>
+                              )}
+                            </VStack>
+                          ))
+                        ) : (
+                          <Badge colorScheme="gray" fontSize="xs">Sin usuario</Badge>
+                        )}
+                      </VStack>
+                    </Td>
+                    <Td>
+                      <VStack align="start" spacing={0.5}>
+                        <Text fontWeight="bold" fontSize="sm">{representante._count.ninos}</Text>
+                        {representante.ninos.slice(0, 2).map((nino, index) => (
+                          <Text key={index} fontSize="xs" color="gray.500">
+                            {nino.nombre} {nino.apellido}
+                          </Text>
+                        ))}
+                        {representante.ninos.length > 2 && (
+                          <Text fontSize="xs" color="gray.400">
+                            +{representante.ninos.length - 2} más
+                          </Text>
+                        )}
+                      </VStack>
+                    </Td>
+                    <Td>
+                      <VStack align="start" spacing={0.5}>
+                        <Badge 
+                          colorScheme={calculatePagosPendientes(representante.pagos) > 0 ? 'red' : 'green'}
+                          fontSize="xs"
+                        >
+                          {calculatePagosPendientes(representante.pagos) > 0 ? 'Deudor' : 'Al día'}
+                        </Badge>
+                        <Text fontSize="xs" color="gray.500">
+                          {representante._count.pagos} pagos
+                        </Text>
+                      </VStack>
+                    </Td>
+                    <Td>
+                      <Text 
+                        fontWeight="bold" 
+                        fontSize="sm"
+                        color={calculateMontoPendiente(representante.pagos) > 0 ? 'red.500' : 'green.500'}
+                      >
+                        ${calculateMontoPendiente(representante.pagos).toFixed(2)}
                       </Text>
-                    ))}
-                  </VStack>
-                </Td>
-                <Td>
-                  <VStack align="start" spacing={1}>
-                    <Badge 
-                      colorScheme={calculatePagosPendientes(representante.pagos) > 0 ? 'red' : 'green'}
-                    >
-                      {calculatePagosPendientes(representante.pagos) > 0 ? 'Deudor' : 'Al día'}
-                    </Badge>
-                    <Text fontSize="xs" color="gray.500">
-                      {representante._count.pagos} pagos registrados
-                    </Text>
-                  </VStack>
-                </Td>
-                <Td>
-                  <Text 
-                    fontWeight="bold" 
-                    color={calculateMontoPendiente(representante.pagos) > 0 ? 'red.500' : 'green.500'}
-                  >
-                    ${calculateMontoPendiente(representante.pagos).toFixed(2)}
-                  </Text>
-                </Td>
-                <Td>
-                  <Stack
-                    direction={{ base: 'column', sm: 'row' }}
-                    spacing={2}
-                    align={{ base: 'stretch', sm: 'center' }}
-                  >
-                    <Button
-                      size="sm"
-                      leftIcon={<FiEdit2 />}
-                      onClick={() => handleEdit(representante)}
-                      width={{ base: '100%', sm: 'auto' }}
-                    >
-                      Editar
-                    </Button>
-                    <Button
-                      size="sm"
-                      leftIcon={<FiTrash2 />}
-                      colorScheme="red"
-                      onClick={() => handleDelete(representante.id)}
-                      isDisabled={representante._count.ninos > 0}
-                      width={{ base: '100%', sm: 'auto' }}
-                    >
-                      Eliminar
-                    </Button>
-                  </Stack>
-                </Td>
-              </Tr>
-            ))}
-          </Tbody>
-        </Table>
-      </Box>
+                    </Td>
+                    <Td>
+                      <HStack spacing={1} flexWrap="wrap">
+                        <Button
+                          size="xs"
+                          leftIcon={<FiEdit2 />}
+                          onClick={() => handleEdit(representante)}
+                        >
+                          Editar
+                        </Button>
+                        <Button
+                          size="xs"
+                          leftIcon={<FiTrash2 />}
+                          colorScheme="red"
+                          onClick={() => handleDelete(representante.id)}
+                          isDisabled={representante._count.ninos > 0}
+                        >
+                          Eliminar
+                        </Button>
+                      </HStack>
+                    </Td>
+                  </Tr>
+                ))}
+              </Tbody>
+            </Table>
+          </Box>
+        )
+      })()}
 
       <Modal isOpen={isOpen} onClose={selectedRepresentante ? onClose : handleFinish} size="xl">
         <ModalOverlay />

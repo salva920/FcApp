@@ -15,17 +15,27 @@ model Usuario {
   email     String   @unique
   password  String
   nombre    String
-  rol       String   // admin, profesor, representante
-  categoria String?  // Categoría asignada al instructor (Sub-6, Sub-8, etc.)
+  rol       String // admin, profesor, representante
+  categoria String? // Categoría asignada al instructor (Sub-6, Sub-8, etc.)
   activo    Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Relaciones (opcionales)
-  representanteId String? @db.ObjectId
+  representanteId String?        @db.ObjectId
   representante   Representante? @relation(fields: [representanteId], references: [id])
-  instructorId    String? @db.ObjectId
-  instructor      Instructor? @relation(fields: [instructorId], references: [id])
+  instructorId    String?        @db.ObjectId
+  instructor      Instructor?    @relation(fields: [instructorId], references: [id])
+
+  // Relaciones Centro de Comunicación
+  chatsParticipante    ParticipanteChat[]
+  mensajesEnviados     Mensaje[]
+  temasForo            TemaForo[]
+  comentariosForo      ComentarioForo[]
+  comunicadosCreados   Comunicado[]         @relation("ComunicadosCreados")
+  lecturasComunicado   LecturaComunicado[]
+  alertasCreadas       AlertaEmergencia[]
+  confirmacionesAlerta ConfirmacionAlerta[]
 
   @@map("usuarios")
 }
@@ -41,221 +51,226 @@ model Representante {
   updatedAt DateTime @updatedAt
 
   // Relaciones
-  ninos     Nino[]
-  pagos     Pago[]
+  ninos          Nino[]
+  pagos          Pago[]
   notificaciones Notificacion[]
-  carritos  Carrito[]
-  ordenes   Orden[]
-  usuarios  Usuario[]
+  carritos       Carrito[]
+  ordenes        Orden[]
+  usuarios       Usuario[]
 
   @@map("representantes")
 }
 
 model Asistencia {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  fecha     DateTime
-  tipo      String   // entrada, salida, presente, ausente
-  puntual   Boolean  @default(true)
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  fecha         DateTime
+  tipo          String // entrada, salida, presente, ausente
+  puntual       Boolean  @default(true)
   observaciones String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   // Relaciones
-  ninoId    String @db.ObjectId
-  nino      Nino   @relation(fields: [ninoId], references: [id])
-  actividadId String? @db.ObjectId
+  ninoId      String     @db.ObjectId
+  nino        Nino       @relation(fields: [ninoId], references: [id])
+  actividadId String?    @db.ObjectId
   actividad   Actividad? @relation(fields: [actividadId], references: [id])
 
   @@map("asistencias")
 }
 
 model ReglaAsistencia {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  nombre    String   // "Puntualidad matutina", "Tolerancia", etc.
-  horaEntrada DateTime  // Hora esperada de entrada
-  tolerancia  Int     @default(15)  // Minutos de tolerancia
-  activo    Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  nombre      String // "Puntualidad matutina", "Tolerancia", etc.
+  horaEntrada DateTime // Hora esperada de entrada
+  tolerancia  Int      @default(15) // Minutos de tolerancia
+  activo      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@map("reglas_asistencia")
 }
 
 model Nino {
-  id           String   @id @default(auto()) @map("_id") @db.ObjectId
-  nombre       String
-  apellido     String
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  nombre          String
+  apellido        String
   fechaNacimiento DateTime
-  cedula       String?
-  alergias     String?
-  emergencia   String?
-  categoria    String   // Sub-8, Sub-10, Sub-12, etc.
-  nivel        String   // Principiante, Intermedio, Avanzado
-  activo       Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  cedula          String?
+  alergias        String?
+  emergencia      String?
+  categoria       String // Sub-8, Sub-10, Sub-12, etc.
+  nivel           String // Principiante, Intermedio, Avanzado
+  activo          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   // Relaciones
-  representanteId String @db.ObjectId
-  representante   Representante @relation(fields: [representanteId], references: [id])
-  asistencias     Asistencia[]
-  evaluaciones    Evaluacion[]
-  equipoJugadores EquipoJugador[]
+  representanteId     String               @db.ObjectId
+  representante       Representante        @relation(fields: [representanteId], references: [id])
+  asistencias         Asistencia[]
+  evaluaciones        Evaluacion[]
+  equipoJugadores     EquipoJugador[]
   estadisticasJugador EstadisticaJugador[]
-  
+
   // Archivos multimedia
-  cedulaFile      String?
-  partidaFile     String?
-  fotoFile        String?
-  
+  cedulaFile  String?
+  partidaFile String?
+  fotoFile    String?
+
   // Reconocimiento facial
-  faceDescriptor  String?  // Descriptor facial codificado en Base64
-  faceImageUrl    String?  // URL de la imagen facial capturada
+  faceDescriptor String? // Descriptor facial codificado en Base64
+  faceImageUrl   String? // URL de la imagen facial capturada
 
   @@map("ninos")
 }
 
 model Evaluacion {
-  id              String   @id @default(auto()) @map("_id") @db.ObjectId
-  fecha           DateTime @default(now())
-  
+  id    String   @id @default(auto()) @map("_id") @db.ObjectId
+  fecha DateTime @default(now())
+
   // Perfil del jugador
-  posicionPrincipal String?  // Delantero, Mediocampista, Defensa, Portero
+  posicionPrincipal     String? // Delantero, Mediocampista, Defensa, Portero
   posicionesSecundarias String[] // Array de posiciones alternativas
-  pieDominante    String?  // Derecho, Izquierdo, Ambos
-  
+  pieDominante          String? // Derecho, Izquierdo, Ambos
+
   // Medidas físicas
-  estatura        Float?   // Estatura en centímetros
-  peso            Float?   // Peso en kilogramos
-  talla           String?  // Talla de camiseta/equipamiento
-  tallaCalzado    String?  // Talla de calzado (ej: 33, 33.5, 34…)
-  
+  estatura     Float? // Estatura en centímetros
+  peso         Float? // Peso en kilogramos
+  talla        String? // Talla de camiseta/equipamiento
+  tallaCalzado String? // Talla de calzado (ej: 33, 33.5, 34…)
+
   // Evaluaciones por competencia (escala 1-10)
   // Técnicas
-  tecControl      Int?  // Control del balón
-  tecPase         Int?  // Precisión de pase
-  tecTiro         Int?  // Potencia y precisión de tiro
-  tecRegate       Int?  // Habilidad de regate
-  tecCabeceo      Int?  // Juego aéreo
-  
+  tecControl Int? // Control del balón
+  tecPase    Int? // Precisión de pase
+  tecTiro    Int? // Potencia y precisión de tiro
+  tecRegate  Int? // Habilidad de regate
+  tecCabeceo Int? // Juego aéreo
+
   // Tácticas
-  tacPosicionamiento Int?  // Posicionamiento en el campo
-  tacLectura      Int?  // Lectura del juego
-  tacMarcaje      Int?  // Capacidad de marcaje
-  tacCobertura    Int?  // Cobertura defensiva
-  tacVision       Int?  // Visión de juego
-  
+  tacPosicionamiento Int? // Posicionamiento en el campo
+  tacLectura         Int? // Lectura del juego
+  tacMarcaje         Int? // Capacidad de marcaje
+  tacCobertura       Int? // Cobertura defensiva
+  tacVision          Int? // Visión de juego
+
   // Físicas
-  fisVelocidad    Int?  // Velocidad
-  fisResistencia  Int?  // Resistencia
-  fisFuerza       Int?  // Fuerza física
-  fisAgilidad     Int?  // Agilidad
-  fisFlexibilidad Int?  // Flexibilidad
-  
+  fisVelocidad    Int? // Velocidad
+  fisResistencia  Int? // Resistencia
+  fisFuerza       Int? // Fuerza física
+  fisAgilidad     Int? // Agilidad
+  fisFlexibilidad Int? // Flexibilidad
+
   // Psicológicas
-  psiConcentracion Int?  // Concentración
-  psiLiderazgo    Int?  // Liderazgo
-  psiDisciplina   Int?  // Disciplina
-  psiMotivacion   Int?  // Motivación
-  psiTrabEquipo   Int?  // Trabajo en equipo
-  
+  psiConcentracion Int? // Concentración
+  psiLiderazgo     Int? // Liderazgo
+  psiDisciplina    Int? // Disciplina
+  psiMotivacion    Int? // Motivación
+  psiTrabEquipo    Int? // Trabajo en equipo
+
   // Observaciones y notas
-  observaciones   String?
-  fortalezas      String?  // Puntos fuertes identificados
-  areasMejora     String?  // Áreas que necesitan mejora
-  
+  observaciones String?
+  fortalezas    String? // Puntos fuertes identificados
+  areasMejora   String? // Áreas que necesitan mejora
+
   // Plan de entrenamiento
-  objetivos       String?  // Objetivos personalizados
-  ejerciciosRecomendados String?  // Ejercicios específicos
-  frecuenciaEntrenamiento String?  // Frecuencia recomendada
-  
+  objetivos               String? // Objetivos personalizados
+  ejerciciosRecomendados  String? // Ejercicios específicos
+  frecuenciaEntrenamiento String? // Frecuencia recomendada
+
   // Metas
-  metasCortoPlazo   String?  // 1-3 meses
-  metasMedianoPlazo String?  // 6 meses
-  metasLargoPlazo   String?  // 1 año+
-  
+  metasCortoPlazo   String? // 1-3 meses
+  metasMedianoPlazo String? // 6 meses
+  metasLargoPlazo   String? // 1 año+
+
   // Metadata
-  evaluadoPor     String?  // Nombre del instructor/evaluador
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  evaluadoPor String? // Nombre del instructor/evaluador
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   // Relaciones
-  ninoId          String @db.ObjectId
-  nino            Nino   @relation(fields: [ninoId], references: [id])
+  ninoId String @db.ObjectId
+  nino   Nino   @relation(fields: [ninoId], references: [id])
 
   @@map("evaluaciones")
 }
 
 model Pago {
-  id              String   @id @default(auto()) @map("_id") @db.ObjectId
-  monto           Float
-  concepto        String   // Mensualidad, Inscripción, etc.
-  fechaVencimiento DateTime
-  fechaPago       DateTime?
-  estado          String   // Pendiente, Pagado, Vencido
-  metodoPago      String?  // Efectivo, Transferencia, Pago Móvil
-  comprobante     String?  // URL del archivo de comprobante
-  observaciones   String?
+  id                 String    @id @default(auto()) @map("_id") @db.ObjectId
+  monto              Float
+  concepto           String // Mensualidad, Inscripción, etc.
+  fechaVencimiento   DateTime
+  fechaPago          DateTime?
+  estado             String // Pendiente, Pagado, Vencido
+  metodoPago         String? // Efectivo, Transferencia, Pago Móvil
+  comprobante        String? // URL del archivo de comprobante
+  observaciones      String?
   // Nuevos campos para el sistema de verificación
-  estadoVerificacion String @default("Pendiente") // Pendiente, Aprobado, Denegado
-  comentarioAdmin   String?  // Comentario del admin al aprobar/denegar
-  fechaVerificacion DateTime?
-  verificadoPor     String?  // ID del admin que verificó
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  estadoVerificacion String    @default("Pendiente") // Pendiente, Aprobado, Denegado
+  comentarioAdmin    String? // Comentario del admin al aprobar/denegar
+  fechaVerificacion  DateTime?
+  verificadoPor      String? // ID del admin que verificó
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
   // Relaciones
-  representanteId String @db.ObjectId
+  representanteId String        @db.ObjectId
   representante   Representante @relation(fields: [representanteId], references: [id])
 
   @@map("pagos")
 }
 
 model Notificacion {
-  id              String   @id @default(auto()) @map("_id") @db.ObjectId
-  tipo            String   // Pago, Recordatorio, Comunicado
-  titulo          String
-  mensaje         String
-  enviada         Boolean  @default(false)
-  fechaEnvio      DateTime?
-  metodoEnvio     String   // Email, WhatsApp, Ambos
-  createdAt       DateTime @default(now())
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  tipo        String // Pago, Recordatorio, Comunicado, Push
+  titulo      String
+  mensaje     String
+  enviada     Boolean   @default(false)
+  fechaEnvio  DateTime?
+  metodoEnvio String // Email, WhatsApp, Ambos, Push
+  // Segmentación para notificaciones push
+  segmentoRol      String? // admin, profesor, representante, representante-delegado, todos
+  segmentoCategoria String? // Sub-6, Sub-8, etc., o null para todas
+  segmentoGrupo     String? // Grupo específico
+  prioridad         String  @default("normal") // normal, alta, urgente
+  createdAt   DateTime  @default(now())
 
   // Relaciones
-  representanteId String? @db.ObjectId
+  representanteId String?        @db.ObjectId
   representante   Representante? @relation(fields: [representanteId], references: [id])
 
   @@map("notificaciones")
 }
 
 model Configuracion {
-  id              String   @id @default(auto()) @map("_id") @db.ObjectId
-  clave           String   @unique
-  valor           String
-  descripcion     String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  clave       String   @unique
+  valor       String
+  descripcion String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@map("configuraciones")
 }
 
 model Producto {
-  id              String   @id @default(auto()) @map("_id") @db.ObjectId
-  nombre          String
-  descripcion     String?
-  categoria       String   // Uniforme, Equipamiento, Accesorio
-  precio          Float
-  stock           Int      @default(0)
-  stockMinimo     Int      @default(5)
-  imagen          String?
-  tallas          String[] // ["XS", "S", "M", "L", "XL"]
-  activo          Boolean  @default(true)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  nombre      String
+  descripcion String?
+  categoria   String // Uniforme, Equipamiento, Accesorio
+  precio      Float
+  stock       Int      @default(0)
+  stockMinimo Int      @default(5)
+  imagen      String?
+  tallas      String[] // ["XS", "S", "M", "L", "XL"]
+  activo      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   // Relaciones
-  carritos        CarritoItem[]
-  ordenes         OrdenItem[]
+  carritos CarritoItem[]
+  ordenes  OrdenItem[]
 
   @@map("productos")
 }
@@ -267,7 +282,7 @@ model Carrito {
   updatedAt DateTime @updatedAt
 
   // Relaciones
-  representanteId String @db.ObjectId
+  representanteId String        @db.ObjectId
   representante   Representante @relation(fields: [representanteId], references: [id])
   items           CarritoItem[]
 
@@ -275,35 +290,35 @@ model Carrito {
 }
 
 model CarritoItem {
-  id            String   @id @default(auto()) @map("_id") @db.ObjectId
-  cantidad      Int
-  talla         String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  cantidad  Int
+  talla     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relaciones
-  carritoId     String @db.ObjectId
-  carrito       Carrito @relation(fields: [carritoId], references: [id])
-  productoId    String @db.ObjectId
-  producto      Producto @relation(fields: [productoId], references: [id])
+  carritoId  String   @db.ObjectId
+  carrito    Carrito  @relation(fields: [carritoId], references: [id])
+  productoId String   @db.ObjectId
+  producto   Producto @relation(fields: [productoId], references: [id])
 
   @@map("carrito_items")
 }
 
 model Orden {
-  id              String   @id @default(auto()) @map("_id") @db.ObjectId
-  numero          String   @unique
-  estado          String   @default("Pendiente") // Pendiente, Confirmada, Enviada, Entregada, Cancelada
-  metodoPago      String?  // Efectivo, Transferencia, Pago Móvil
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  numero          String    @unique
+  estado          String    @default("Pendiente") // Pendiente, Confirmada, Enviada, Entregada, Cancelada
+  metodoPago      String? // Efectivo, Transferencia, Pago Móvil
   comprobantePago String?
   total           Float
   direccionEnvio  String?
   fechaEntrega    DateTime?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   // Relaciones
-  representanteId String @db.ObjectId
+  representanteId String        @db.ObjectId
   representante   Representante @relation(fields: [representanteId], references: [id])
   items           OrdenItem[]
 
@@ -311,68 +326,68 @@ model Orden {
 }
 
 model OrdenItem {
-  id            String   @id @default(auto()) @map("_id") @db.ObjectId
-  cantidad      Int
-  precio        Float
-  talla         String?
-  createdAt     DateTime @default(now())
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  cantidad  Int
+  precio    Float
+  talla     String?
+  createdAt DateTime @default(now())
 
   // Relaciones
-  ordenId       String @db.ObjectId
-  orden         Orden @relation(fields: [ordenId], references: [id])
-  productoId    String @db.ObjectId
-  producto      Producto @relation(fields: [productoId], references: [id])
+  ordenId    String   @db.ObjectId
+  orden      Orden    @relation(fields: [ordenId], references: [id])
+  productoId String   @db.ObjectId
+  producto   Producto @relation(fields: [productoId], references: [id])
 
   @@map("orden_items")
 }
 
 model Actividad {
-  id              String   @id @default(auto()) @map("_id") @db.ObjectId
-  titulo          String
-  descripcion     String?
-  tipo            String   // Entrenamiento, Partido, Evento, Torneo
-  fechaInicio     DateTime
-  fechaFin        DateTime
-  color           String   @default("blue")
-  activo          Boolean  @default(true)
-  estado          String   @default("Pendiente") // Pendiente, Aprobada, Rechazada
-  aprobadoPor     String?  // id o nombre del admin que aprueba
-  aprobadoEn      DateTime?
-  creadoPorRol    String?  // admin, profesor, representante
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  titulo       String
+  descripcion  String?
+  tipo         String // Entrenamiento, Partido, Evento, Torneo
+  fechaInicio  DateTime
+  fechaFin     DateTime
+  color        String    @default("blue")
+  activo       Boolean   @default(true)
+  estado       String    @default("Pendiente") // Pendiente, Aprobada, Rechazada
+  aprobadoPor  String? // id o nombre del admin que aprueba
+  aprobadoEn   DateTime?
+  creadoPorRol String? // admin, profesor, representante
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   // Relaciones
-  canchaId        String? @db.ObjectId
-  cancha          Cancha? @relation(fields: [canchaId], references: [id])
-  instructorId    String? @db.ObjectId
-  instructor      Instructor? @relation(fields: [instructorId], references: [id])
-  categoria       String? // Para filtrar por edad
-  recordatorios   Recordatorio[]
-  reservas        Reserva[]
-  asistencias     Asistencia[]
+  canchaId      String?        @db.ObjectId
+  cancha        Cancha?        @relation(fields: [canchaId], references: [id])
+  instructorId  String?        @db.ObjectId
+  instructor    Instructor?    @relation(fields: [instructorId], references: [id])
+  categoria     String? // Para filtrar por edad
+  recordatorios Recordatorio[]
+  reservas      Reserva[]
+  asistencias   Asistencia[]
 
   @@map("actividades")
 }
 
 /// Gestión de Torneos y Competencias
 model Torneo {
-  id           String   @id @default(auto()) @map("_id") @db.ObjectId
-  nombre       String
-  descripcion  String?
-  tipo         String   // Liga, Eliminatoria, Grupos mixto
-  ambito       String   // Interno, Externo
-  categoria    String?  // Sub-6, Sub-8, etc.
-  formato      String   // round-robin, ida-vuelta, playoff, grupos
-  fechaInicio  DateTime
-  fechaFin     DateTime
-  activo       Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  nombre      String
+  descripcion String?
+  tipo        String // Liga, Eliminatoria, Grupos mixto
+  ambito      String // Interno, Externo
+  categoria   String? // Sub-6, Sub-8, etc.
+  formato     String // round-robin, ida-vuelta, playoff, grupos
+  fechaInicio DateTime
+  fechaFin    DateTime
+  activo      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   // Relaciones
-  partidos     Partido[]
-  equipos      Equipo[]
+  partidos            Partido[]
+  equipos             Equipo[]
   estadisticasEquipo  EstadisticaEquipo[]
   estadisticasJugador EstadisticaJugador[]
 
@@ -380,23 +395,23 @@ model Torneo {
 }
 
 model Equipo {
-  id           String   @id @default(auto()) @map("_id") @db.ObjectId
-  nombre       String
-  categoria    String?  // Sub-6, Sub-8, etc.
-  descripcion  String?
-  activo       Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  nombre      String
+  categoria   String? // Sub-6, Sub-8, etc.
+  descripcion String?
+  activo      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   // Relaciones
-  torneoId     String?  @db.ObjectId
-  torneo       Torneo?  @relation(fields: [torneoId], references: [id])
-  entrenadorId String?  @db.ObjectId
-  entrenador   Instructor? @relation(fields: [entrenadorId], references: [id])
-  jugadores    EquipoJugador[]
-  localDe      Partido[] @relation("EquipoLocal")
-  visitaDe     Partido[] @relation("EquipoVisita")
-  estadisticas EstadisticaEquipo[]
+  torneoId            String?              @db.ObjectId
+  torneo              Torneo?              @relation(fields: [torneoId], references: [id])
+  entrenadorId        String?              @db.ObjectId
+  entrenador          Instructor?          @relation(fields: [entrenadorId], references: [id])
+  jugadores           EquipoJugador[]
+  localDe             Partido[]            @relation("EquipoLocal")
+  visitaDe            Partido[]            @relation("EquipoVisita")
+  estadisticas        EstadisticaEquipo[]
   estadisticasJugador EstadisticaJugador[]
 
   @@map("equipos")
@@ -405,63 +420,63 @@ model Equipo {
 model EquipoJugador {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   dorsal    Int?
-  posicion  String?  // Delantero, Medio, Defensa, Portero
+  posicion  String? // Delantero, Medio, Defensa, Portero
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Relaciones
-  equipoId  String @db.ObjectId
-  equipo    Equipo @relation(fields: [equipoId], references: [id])
-  ninoId    String @db.ObjectId
-  nino      Nino   @relation(fields: [ninoId], references: [id])
+  equipoId String @db.ObjectId
+  equipo   Equipo @relation(fields: [equipoId], references: [id])
+  ninoId   String @db.ObjectId
+  nino     Nino   @relation(fields: [ninoId], references: [id])
 
   @@unique([equipoId, ninoId])
   @@map("equipo_jugadores")
 }
 
 model Partido {
-  id            String   @id @default(auto()) @map("_id") @db.ObjectId
-  fecha         DateTime
-  ronda         String?   // Jornada 1, Cuartos, Semifinal, Final, Grupo A - Fecha 1
-  grupo         String?   // Grupo A, Grupo B, etc.
-  estado        String    @default("Programado") // Programado, EnJuego, Finalizado
-  marcadorLocal Int?      // Goles local
-  marcadorVisita Int?     // Goles visita
-  observaciones String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  fecha          DateTime
+  ronda          String? // Jornada 1, Cuartos, Semifinal, Final, Grupo A - Fecha 1
+  grupo          String? // Grupo A, Grupo B, etc.
+  estado         String   @default("Programado") // Programado, EnJuego, Finalizado
+  marcadorLocal  Int? // Goles local
+  marcadorVisita Int? // Goles visita
+  observaciones  String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   // Relaciones
-  torneoId      String @db.ObjectId
-  torneo        Torneo @relation(fields: [torneoId], references: [id])
-  equipoLocalId String @db.ObjectId
-  equipoLocal   Equipo @relation("EquipoLocal", fields: [equipoLocalId], references: [id])
-  equipoVisitaId String @db.ObjectId
-  equipoVisita   Equipo @relation("EquipoVisita", fields: [equipoVisitaId], references: [id])
-  canchaId      String? @db.ObjectId
-  cancha        Cancha? @relation(fields: [canchaId], references: [id])
+  torneoId       String  @db.ObjectId
+  torneo         Torneo  @relation(fields: [torneoId], references: [id])
+  equipoLocalId  String  @db.ObjectId
+  equipoLocal    Equipo  @relation("EquipoLocal", fields: [equipoLocalId], references: [id])
+  equipoVisitaId String  @db.ObjectId
+  equipoVisita   Equipo  @relation("EquipoVisita", fields: [equipoVisitaId], references: [id])
+  canchaId       String? @db.ObjectId
+  cancha         Cancha? @relation(fields: [canchaId], references: [id])
 
   @@map("partidos")
 }
 
 model EstadisticaJugador {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  goles      Int      @default(0)
-  asistencias Int     @default(0)
-  amarillas  Int      @default(0)
-  rojas      Int      @default(0)
-  partidos   Int      @default(0)
-  minutos    Int      @default(0)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  goles       Int      @default(0)
+  asistencias Int      @default(0)
+  amarillas   Int      @default(0)
+  rojas       Int      @default(0)
+  partidos    Int      @default(0)
+  minutos     Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   // Relaciones
-  torneoId   String   @db.ObjectId
-  torneo     Torneo   @relation(fields: [torneoId], references: [id])
-  equipoId   String   @db.ObjectId
-  equipo     Equipo   @relation(fields: [equipoId], references: [id])
-  ninoId     String   @db.ObjectId
-  nino       Nino     @relation(fields: [ninoId], references: [id])
+  torneoId String @db.ObjectId
+  torneo   Torneo @relation(fields: [torneoId], references: [id])
+  equipoId String @db.ObjectId
+  equipo   Equipo @relation(fields: [equipoId], references: [id])
+  ninoId   String @db.ObjectId
+  nino     Nino   @relation(fields: [ninoId], references: [id])
 
   @@unique([torneoId, equipoId, ninoId])
   @@map("estadisticas_jugador")
@@ -482,87 +497,275 @@ model EstadisticaEquipo {
   updatedAt   DateTime @updatedAt
 
   // Relaciones
-  torneoId    String   @db.ObjectId
-  torneo      Torneo   @relation(fields: [torneoId], references: [id])
-  equipoId    String   @db.ObjectId
-  equipo      Equipo   @relation(fields: [equipoId], references: [id])
+  torneoId String @db.ObjectId
+  torneo   Torneo @relation(fields: [torneoId], references: [id])
+  equipoId String @db.ObjectId
+  equipo   Equipo @relation(fields: [equipoId], references: [id])
 
   @@unique([torneoId, equipoId])
   @@map("estadisticas_equipo")
 }
 
 model Instructor {
-  id              String   @id @default(auto()) @map("_id") @db.ObjectId
-  nombre          String
-  cedula          String   @unique
-  email           String
-  telefono        String
-  especialidad    String?
-  activo          Boolean  @default(true)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  nombre       String
+  cedula       String   @unique
+  email        String
+  telefono     String
+  especialidad String?
+  activo       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   // Relaciones
-  actividades     Actividad[]
-  reservas        Reserva[]
-  usuarios        Usuario[]
-  equipos         Equipo[]
+  actividades Actividad[]
+  reservas    Reserva[]
+  usuarios    Usuario[]
+  equipos     Equipo[]
 
   @@map("instructores")
 }
 
 model Cancha {
-  id              String   @id @default(auto()) @map("_id") @db.ObjectId
-  nombre          String
-  descripcion     String?
-  capacidad       Int
-  tipo            String   // Césped, Césped Sintético, Aluminio
-  activo          Boolean  @default(true)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  nombre      String
+  descripcion String?
+  capacidad   Int
+  tipo        String // Césped, Césped Sintético, Aluminio
+  activo      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   // Relaciones
-  actividades     Actividad[]
-  reservas        Reserva[]
-  partidos        Partido[]
+  actividades Actividad[]
+  reservas    Reserva[]
+  partidos    Partido[]
 
   @@map("canchas")
 }
 
 model Recordatorio {
-  id              String   @id @default(auto()) @map("_id") @db.ObjectId
-  titulo          String
-  mensaje         String
-  fechaEnvio      DateTime // Cuándo se enviará
-  enviado         Boolean  @default(false)
-  tipoEnvio       String   @default("Email") // Email, WhatsApp, Ambos
-  activo          Boolean  @default(true)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  titulo     String
+  mensaje    String
+  fechaEnvio DateTime // Cuándo se enviará
+  enviado    Boolean  @default(false)
+  tipoEnvio  String   @default("Email") // Email, WhatsApp, Ambos
+  activo     Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   // Relaciones
-  actividadId     String @db.ObjectId
-  actividad       Actividad @relation(fields: [actividadId], references: [id])
+  actividadId String    @db.ObjectId
+  actividad   Actividad @relation(fields: [actividadId], references: [id])
 
   @@map("recordatorios")
 }
 
 model Reserva {
-  id              String   @id @default(auto()) @map("_id") @db.ObjectId
-  fechaInicio     DateTime
-  fechaFin        DateTime
-  estado          String   @default("Confirmada") // Confirmada, Pendiente, Cancelada
-  observaciones   String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  fechaInicio   DateTime
+  fechaFin      DateTime
+  estado        String   @default("Confirmada") // Confirmada, Pendiente, Cancelada
+  observaciones String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   // Relaciones
-  canchaId        String @db.ObjectId
-  cancha          Cancha @relation(fields: [canchaId], references: [id])
-  actividadId     String? @db.ObjectId
-  actividad       Actividad? @relation(fields: [actividadId], references: [id])
-  instructorId    String? @db.ObjectId
-  instructor      Instructor? @relation(fields: [instructorId], references: [id])
+  canchaId     String      @db.ObjectId
+  cancha       Cancha      @relation(fields: [canchaId], references: [id])
+  actividadId  String?     @db.ObjectId
+  actividad    Actividad?  @relation(fields: [actividadId], references: [id])
+  instructorId String?     @db.ObjectId
+  instructor   Instructor? @relation(fields: [instructorId], references: [id])
 
   @@map("reservas")
+}
+
+/// Centro de Comunicación
+model Chat {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  tipo      String // individual, grupo
+  nombre    String? // Para chats grupales
+  categoria String? // Para chats por categoría
+  activo    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relaciones
+  participantes ParticipanteChat[]
+  mensajes      Mensaje[]
+
+  @@map("chats")
+}
+
+model ParticipanteChat {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  leido         Boolean   @default(false)
+  ultimaLectura DateTime?
+  silenciado    Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relaciones
+  chatId    String  @db.ObjectId
+  chat      Chat    @relation(fields: [chatId], references: [id])
+  usuarioId String  @db.ObjectId
+  usuario   Usuario @relation(fields: [usuarioId], references: [id])
+
+  @@unique([chatId, usuarioId])
+  @@map("participantes_chat")
+}
+
+model Mensaje {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  contenido  String
+  tipo       String   @default("texto") // texto, imagen, archivo, sistema
+  archivoUrl String?
+  leido      Boolean  @default(false)
+  eliminado  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relaciones
+  chatId      String  @db.ObjectId
+  chat        Chat    @relation(fields: [chatId], references: [id])
+  remitenteId String  @db.ObjectId
+  remitente   Usuario @relation(fields: [remitenteId], references: [id])
+
+  @@map("mensajes")
+}
+
+model Foro {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  nombre      String
+  descripcion String?
+  categoria   String? // Sub-6, Sub-8, etc.
+  icono       String?
+  color       String?
+  activo      Boolean  @default(true)
+  soloLectura Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relaciones
+  temas TemaForo[]
+
+  @@map("foros")
+}
+
+model TemaForo {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  titulo    String
+  contenido String
+  fijado    Boolean  @default(false)
+  cerrado   Boolean  @default(false)
+  visitas   Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relaciones
+  foroId      String           @db.ObjectId
+  foro        Foro             @relation(fields: [foroId], references: [id])
+  autorId     String           @db.ObjectId
+  autor       Usuario          @relation(fields: [autorId], references: [id])
+  comentarios ComentarioForo[]
+
+  @@map("temas_foro")
+}
+
+model ComentarioForo {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  contenido String
+  editado   Boolean  @default(false)
+  eliminado Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relaciones
+  temaId  String   @db.ObjectId
+  tema    TemaForo @relation(fields: [temaId], references: [id])
+  autorId String   @db.ObjectId
+  autor   Usuario  @relation(fields: [autorId], references: [id])
+
+  @@map("comentarios_foro")
+}
+
+model Comunicado {
+  id                   String    @id @default(auto()) @map("_id") @db.ObjectId
+  titulo               String
+  contenido            String
+  tipo                 String // General, Categoría, Grupo
+  categoria            String? // Si es por categoría
+  prioridad            String    @default("normal") // normal, alta, urgente
+  archivoUrl           String?
+  requiereConfirmacion Boolean   @default(true)
+  fechaVencimiento     DateTime?
+  activo               Boolean   @default(true)
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  // Relaciones
+  creadorId String              @db.ObjectId
+  creador   Usuario             @relation("ComunicadosCreados", fields: [creadorId], references: [id])
+  lecturas  LecturaComunicado[]
+
+  @@map("comunicados")
+}
+
+model LecturaComunicado {
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  leido        Boolean   @default(false)
+  fechaLectura DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  // Relaciones
+  comunicadoId String     @db.ObjectId
+  comunicado   Comunicado @relation(fields: [comunicadoId], references: [id])
+  usuarioId    String     @db.ObjectId
+  usuario      Usuario    @relation(fields: [usuarioId], references: [id])
+
+  @@unique([comunicadoId, usuarioId])
+  @@map("lecturas_comunicado")
+}
+
+model AlertaEmergencia {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  titulo      String
+  mensaje     String
+  tipo        String // emergencia, seguridad, clima, otro
+  prioridad   String    @default("maxima") // maxima, alta, media
+  categoria   String? // Para segmentar por categoría
+  grupo       String? // Para segmentar por grupo específico
+  activa      Boolean   @default(true)
+  fechaInicio DateTime  @default(now())
+  fechaFin    DateTime?
+  enviada     Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relaciones
+  creadorId      String               @db.ObjectId
+  creador        Usuario              @relation(fields: [creadorId], references: [id])
+  confirmaciones ConfirmacionAlerta[]
+
+  @@map("alertas_emergencia")
+}
+
+model ConfirmacionAlerta {
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
+  confirmado        Boolean   @default(false)
+  fechaConfirmacion DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  // Relaciones
+  alertaId  String           @db.ObjectId
+  alerta    AlertaEmergencia @relation(fields: [alertaId], references: [id])
+  usuarioId String           @db.ObjectId
+  usuario   Usuario          @relation(fields: [usuarioId], references: [id])
+
+  @@unique([alertaId, usuarioId])
+  @@map("confirmaciones_alerta")
 }

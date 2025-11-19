@@ -18,28 +18,14 @@ import {
   ModalHeader,
   ModalBody,
   ModalCloseButton,
-  useDisclosure,
   Spinner,
   Center,
   Badge,
-  Image,
-  Flex
+  Image
 } from '@chakra-ui/react'
 import { FiCamera, FiCheck, FiX, FiUser, FiAlertCircle } from 'react-icons/fi'
 import Webcam from 'react-webcam'
-
-// Tipos para el reconocimiento facial
-interface FaceDetection {
-  detection: {
-    box: {
-      x: number
-      y: number
-      width: number
-      height: number
-    }
-  }
-  descriptor?: Float32Array
-}
+import { useFaceRecognition } from '@/hooks/useFaceRecognition'
 
 interface FacialRecognitionProps {
   onPhotoCaptured: (photoData: string, faceDescriptor?: Float32Array) => void
@@ -55,131 +41,118 @@ export default function FacialRecognition({
   description = "Posicione su rostro frente a la cámara para el reconocimiento facial"
 }: FacialRecognitionProps) {
   const webcamRef = useRef<Webcam>(null)
-  const [isLoading, setIsLoading] = useState(false)
-  const [isModelLoaded, setIsModelLoaded] = useState(false)
   const [faceDetected, setFaceDetected] = useState(false)
   const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null)
   const [faceDescriptor, setFaceDescriptor] = useState<Float32Array | null>(null)
   const [detectionBox, setDetectionBox] = useState<{x: number, y: number, width: number, height: number} | null>(null)
-  const [error, setError] = useState<string | null>(null)
+  const [isCapturing, setIsCapturing] = useState(false)
   const toast = useToast()
 
-  // Cargar modelos de Face API
+  // Usar hook de reconocimiento facial
+  const { modelsLoaded, isLoading, error, detectFace, extractDescriptor } = useFaceRecognition()
+
+  // Notificar cuando los modelos estén cargados o haya error
   useEffect(() => {
-    const loadModels = async () => {
-      try {
-        setIsLoading(true)
-        
-        // Simular carga de modelos (implementación simplificada)
-        console.log('Inicializando sistema de reconocimiento facial...')
-        
-        // Simular tiempo de carga
-        await new Promise(resolve => setTimeout(resolve, 2000))
-        
-        console.log('Sistema de reconocimiento facial listo')
-        
-        setIsModelLoaded(true)
-        toast({
-          title: 'Modelos cargados',
-          description: 'El sistema de reconocimiento facial está listo',
-          status: 'success',
-          duration: 2000
-        })
-      } catch (err) {
-        console.error('Error cargando modelos:', err)
-        setError('Error al cargar los modelos de reconocimiento facial')
-        toast({
-          title: 'Error',
-          description: 'No se pudieron cargar los modelos de reconocimiento',
-          status: 'error',
-          duration: 3000
-        })
-      } finally {
-        setIsLoading(false)
-      }
+    if (modelsLoaded) {
+      toast({
+        title: 'Modelos cargados',
+        description: 'El sistema de reconocimiento facial está listo',
+        status: 'success',
+        duration: 2000
+      })
     }
+  }, [modelsLoaded, toast])
 
-    loadModels()
-  }, [toast])
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: 'Error cargando modelos',
+        description: error,
+        status: 'error',
+        duration: 5000,
+        isClosable: true
+      })
+    }
+  }, [error, toast])
 
-  // Detectar rostros en tiempo real (implementación simplificada)
+  // Detectar rostros en tiempo real usando face-api.js
   const detectFaces = useCallback(async () => {
-    if (!webcamRef.current || !isModelLoaded) return
+    if (!webcamRef.current || !modelsLoaded) return
 
     try {
-      const imageSrc = webcamRef.current.getScreenshot()
-      if (!imageSrc) return
+      const video = webcamRef.current.video
+      if (!video || video.readyState !== video.HAVE_ENOUGH_DATA) return
 
-      // Simular detección de rostros basada en análisis de imagen básico
-      const img = new window.Image()
-      img.crossOrigin = 'anonymous'
-      
-      img.onload = () => {
-        try {
-          // Análisis básico de imagen para simular detección de rostros
-          const canvas = document.createElement('canvas')
-          const ctx = canvas.getContext('2d')
-          if (!ctx) return
-
-          canvas.width = img.width
-          canvas.height = img.height
-          ctx.drawImage(img, 0, 0)
-
-          // Simular detección basada en análisis de brillo y contraste
-          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
-          const data = imageData.data
-          
-          let totalBrightness = 0
-          let pixelCount = 0
-          
-          for (let i = 0; i < data.length; i += 4) {
-            const brightness = (data[i] + data[i + 1] + data[i + 2]) / 3
-            totalBrightness += brightness
-            pixelCount++
-          }
-          
-          const avgBrightness = totalBrightness / pixelCount
-          
-          // Simular detección de rostro si la imagen tiene un brillo promedio razonable
-          const hasFace = avgBrightness > 50 && avgBrightness < 200
-          
-          if (hasFace) {
-            setFaceDetected(true)
-            // Simular posición de detección en el centro de la imagen
-            setDetectionBox({
-              x: canvas.width * 0.2,
-              y: canvas.height * 0.2,
-              width: canvas.width * 0.6,
-              height: canvas.height * 0.6
-            })
-          } else {
-            setFaceDetected(false)
-            setDetectionBox(null)
-          }
-        } catch (err) {
-          console.error('Error en detección facial:', err)
-        }
+      // Validar dimensiones del video
+      if (!video.videoWidth || !video.videoHeight) {
+        return
       }
+
+      const detection = await detectFace(video)
       
-      img.src = imageSrc
+      if (detection && detection.detection && detection.detection.box) {
+        const box = detection.detection.box
+        
+        // Validar que la caja tenga valores válidos
+        if (box.x !== null && box.x !== undefined &&
+            box.y !== null && box.y !== undefined &&
+            box.width !== null && box.width !== undefined &&
+            box.height !== null && box.height !== undefined &&
+            box.width > 0 && box.height > 0) {
+          setFaceDetected(true)
+          setDetectionBox({
+            x: box.x,
+            y: box.y,
+            width: box.width,
+            height: box.height
+          })
+        } else {
+          setFaceDetected(false)
+          setDetectionBox(null)
+        }
+      } else {
+        setFaceDetected(false)
+        setDetectionBox(null)
+      }
     } catch (err) {
       console.error('Error en detección facial:', err)
+      setFaceDetected(false)
+      setDetectionBox(null)
     }
-  }, [isModelLoaded])
+  }, [modelsLoaded, detectFace])
 
-  // Ejecutar detección cada 100ms
+  // Ejecutar detección cada 200ms cuando los modelos estén cargados
   useEffect(() => {
-    if (!isModelLoaded) return
+    if (!modelsLoaded) return
 
-    const interval = setInterval(detectFaces, 100)
+    const interval = setInterval(detectFaces, 200)
     return () => clearInterval(interval)
-  }, [detectFaces, isModelLoaded])
+  }, [detectFaces, modelsLoaded])
 
   const capturePhoto = useCallback(async () => {
-    if (!webcamRef.current || !faceDetected) return
+    if (!webcamRef.current || !faceDetected || !modelsLoaded) {
+      toast({
+        title: 'Error',
+        description: 'Asegúrate de que se detecte un rostro antes de capturar',
+        status: 'warning',
+        duration: 3000
+      })
+      return
+    }
+
+    // Validar que tengamos una detección válida antes de capturar
+    if (!detectionBox || detectionBox.width <= 0 || detectionBox.height <= 0) {
+      toast({
+        title: 'Error',
+        description: 'No se detectó un rostro válido. Por favor, posicione el rostro frente a la cámara.',
+        status: 'warning',
+        duration: 3000
+      })
+      return
+    }
 
     try {
-      setIsLoading(true)
+      setIsCapturing(true)
       
       const imageSrc = webcamRef.current.getScreenshot()
       if (!imageSrc) {
@@ -196,26 +169,21 @@ export default function FacialRecognition({
         img.src = imageSrc
       })
 
-      // Generar descriptor facial simulado basado en la imagen
-      const canvas = document.createElement('canvas')
-      const ctx = canvas.getContext('2d')
-      if (!ctx) throw new Error('No se pudo crear contexto de canvas')
+      // Validar dimensiones de la imagen
+      if (!img.width || !img.height) {
+        throw new Error('La imagen capturada no tiene dimensiones válidas')
+      }
 
-      canvas.width = img.width
-      canvas.height = img.height
-      ctx.drawImage(img, 0, 0)
-
-      // Extraer características básicas de la imagen para crear un descriptor simulado
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
-      const data = imageData.data
+      // Usar extractDescriptor en lugar de detectFace para evitar problemas con extractFaces
+      const descriptor = await extractDescriptor(img)
       
-      // Crear descriptor facial simulado basado en características de la imagen
-      const descriptor = new Float32Array(128)
-      for (let i = 0; i < 128; i++) {
-        // Usar diferentes partes de la imagen para generar el descriptor
-        const pixelIndex = (i * 4) % data.length
-        const brightness = (data[pixelIndex] + data[pixelIndex + 1] + data[pixelIndex + 2]) / 3
-        descriptor[i] = brightness / 255 // Normalizar entre 0 y 1
+      if (!descriptor) {
+        throw new Error('No se pudo extraer el descriptor facial. Asegúrate de que el rostro esté bien visible y centrado.')
+      }
+
+      // Validar que el descriptor sea válido
+      if (!(descriptor instanceof Float32Array) || descriptor.length === 0) {
+        throw new Error('El descriptor facial extraído no es válido. Intenta capturar nuevamente.')
       }
 
       setCapturedPhoto(imageSrc)
@@ -237,9 +205,9 @@ export default function FacialRecognition({
         duration: 3000
       })
     } finally {
-      setIsLoading(false)
+      setIsCapturing(false)
     }
-  }, [faceDetected, toast])
+  }, [faceDetected, modelsLoaded, extractDescriptor, detectionBox, toast])
 
   const confirmPhoto = () => {
     if (capturedPhoto && faceDescriptor) {
@@ -285,16 +253,22 @@ export default function FacialRecognition({
               </Alert>
             )}
 
-            {isLoading && !isModelLoaded && (
+            {isLoading && !modelsLoaded && (
               <Center py={8}>
                 <VStack spacing={4}>
                   <Spinner size="lg" color="blue.500" />
                   <Text>Cargando modelos de reconocimiento facial...</Text>
+                  {error && (
+                    <Alert status="error" size="sm">
+                      <AlertIcon />
+                      <AlertDescription fontSize="xs">{error}</AlertDescription>
+                    </Alert>
+                  )}
                 </VStack>
               </Center>
             )}
 
-            {isModelLoaded && !capturedPhoto && (
+            {modelsLoaded && !capturedPhoto && (
               <Box position="relative" borderRadius="lg" overflow="hidden">
                 <Webcam
                   ref={webcamRef}
@@ -306,17 +280,20 @@ export default function FacialRecognition({
                 />
                 
                 {/* Overlay de detección facial */}
-                {detectionBox && (
+                {detectionBox && faceDetected && (
                   <Box
                     position="absolute"
-                    top={detectionBox.y}
-                    left={detectionBox.x}
-                    width={detectionBox.width}
-                    height={detectionBox.height}
-                    border="3px solid"
-                    borderColor={faceDetected ? "green.400" : "red.400"}
-                    borderRadius="full"
+                    top={`${Math.max(0, detectionBox.y)}px`}
+                    left={`${Math.max(0, detectionBox.x)}px`}
+                    width={`${Math.min(detectionBox.width, 640)}px`}
+                    height={`${Math.min(detectionBox.height, 480)}px`}
+                    border="4px solid"
+                    borderColor="green.500"
+                    borderRadius="xl"
                     pointerEvents="none"
+                    boxShadow="0 0 20px rgba(34, 197, 94, 0.5)"
+                    transition="all 0.1s ease"
+                    zIndex={10}
                   />
                 )}
               </Box>
@@ -345,7 +322,7 @@ export default function FacialRecognition({
 
             {/* Estados de la cámara */}
             <HStack spacing={4} justify="center">
-              {isModelLoaded && (
+              {modelsLoaded && (
                 <Badge colorScheme="blue" variant="outline">
                   <HStack spacing={1}>
                     <FiCheck />
@@ -363,7 +340,7 @@ export default function FacialRecognition({
                 </Badge>
               )}
               
-              {!faceDetected && isModelLoaded && !capturedPhoto && (
+              {!faceDetected && modelsLoaded && !capturedPhoto && (
                 <Badge colorScheme="orange" variant="solid">
                   <HStack spacing={1}>
                     <FiAlertCircle />
@@ -380,8 +357,8 @@ export default function FacialRecognition({
                   onClick={capturePhoto}
                   colorScheme="blue"
                   leftIcon={<FiCamera />}
-                  isDisabled={!faceDetected || isLoading}
-                  isLoading={isLoading}
+                  isDisabled={!faceDetected || !modelsLoaded || isCapturing}
+                  isLoading={isCapturing}
                 >
                   Capturar Foto
                 </Button>

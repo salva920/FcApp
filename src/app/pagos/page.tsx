@@ -40,6 +40,7 @@ import {
   StatNumber,
   StatHelpText,
   StatArrow,
+  Divider,
   Textarea,
   NumberInput,
   NumberInputField,
@@ -47,7 +48,8 @@ import {
   NumberIncrementStepper,
   NumberDecrementStepper,
   Stack,
-  SimpleGrid
+  SimpleGrid,
+  useBreakpointValue
 } from '@chakra-ui/react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { FiPlus, FiEdit2, FiTrash2, FiSearch, FiDollarSign, FiCalendar, FiUpload, FiEye, FiDownload } from 'react-icons/fi'
@@ -100,6 +102,7 @@ export default function PagosPage() {
   const queryClient = useQueryClient()
   const cardBg = useColorModeValue('white', 'gray.800')
   const borderColor = useColorModeValue('gray.200', 'gray.600')
+  const showTable = useBreakpointValue({ base: false, lg: true })
 
   const { data: pagos, isLoading } = useQuery<Pago[]>({
     queryKey: ['pagos'],
@@ -501,137 +504,274 @@ export default function PagosPage() {
         </Stack>
       </Box>
 
-      <Box overflowX="auto">
-        <Table variant="simple" size="md" minW="960px">
-          <Thead>
-            <Tr>
-              <Th>Concepto</Th>
-              <Th>Representante</Th>
-              <Th>Monto</Th>
-              <Th>Fecha Vencimiento</Th>
-              <Th>Fecha Pago</Th>
-              <Th>Estado</Th>
-              <Th>Verificación</Th>
-              <Th>Método</Th>
-              <Th>Acciones</Th>
-            </Tr>
-          </Thead>
-          <Tbody>
-            {filteredPagos?.map((pago) => (
-              <Tr key={pago.id}>
-                <Td>
-                  <VStack align="start" spacing={1}>
-                    <Text fontWeight="bold">{pago.concepto}</Text>
-                    {pago.observaciones && (
-                      <Text fontSize="xs" color="gray.500">{pago.observaciones}</Text>
-                    )}
-                  </VStack>
-                </Td>
-                <Td>
-                  <VStack align="start" spacing={1}>
-                    <Text fontWeight="bold">{pago.representante.nombre}</Text>
-                    <Text fontSize="xs" color="gray.500">{pago.representante.cedula}</Text>
-                    <Text fontSize="xs" color="gray.500">{pago.representante.email}</Text>
-                  </VStack>
-                </Td>
-                <Td>
-                  <Text fontWeight="bold" fontSize="lg">
-                    ${pago.monto.toFixed(2)}
-                  </Text>
-                </Td>
-                <Td>
-                  <Text fontSize="sm">
-                    {format(new Date(pago.fechaVencimiento), 'dd/MM/yyyy', { locale: es })}
-                  </Text>
-                </Td>
-                <Td>
-                  {pago.fechaPago ? (
-                    <Text fontSize="sm">
-                      {format(new Date(pago.fechaPago), 'dd/MM/yyyy', { locale: es })}
-                    </Text>
-                  ) : (
-                    <Text fontSize="sm" color="gray.400">-</Text>
-                  )}
-                </Td>
-                <Td>
-                  <Badge colorScheme={getEstadoColor(pago.estado)}>
-                    {pago.estado}
-                  </Badge>
-                </Td>
-                <Td>
-                  <Badge colorScheme={getVerificacionColor(pago.estadoVerificacion || 'Pendiente')}>
-                    {pago.estadoVerificacion || 'Pendiente'}
-                  </Badge>
-                </Td>
-                <Td>
-                  {pago.metodoPago ? (
-                    <Badge colorScheme={getMetodoPagoColor(pago.metodoPago)}>
-                      {pago.metodoPago}
-                    </Badge>
-                  ) : (
-                    <Text fontSize="sm" color="gray.400">-</Text>
-                  )}
-                </Td>
-                <Td>
-                  <Stack
-                    direction={{ base: 'column', md: 'row' }}
-                    spacing={2}
-                    align={{ base: 'stretch', md: 'center' }}
-                  >
-                    <Button
-                      size="sm"
-                      leftIcon={<FiEye />}
-                      onClick={() => handleView(pago)}
-                      width={{ base: '100%', md: 'auto' }}
-                    >
-                      Ver
-                    </Button>
-                    {(pago.estadoVerificacion === 'Pendiente' || !pago.estadoVerificacion) && (
-                      <>
+      {!showTable ? (
+            <SimpleGrid columns={{ base: 1, sm: 2 }} spacing={4}>
+              {filteredPagos?.map((pago) => (
+                <Card key={pago.id} size="sm">
+                  <CardBody>
+                    <VStack align="stretch" spacing={3}>
+                      {/* Header con concepto y monto */}
+                      <HStack justify="space-between" align="start">
+                        <VStack align="start" spacing={1} flex={1}>
+                          <Text fontWeight="bold" fontSize="lg">
+                            {pago.concepto}
+                          </Text>
+                          {pago.observaciones && (
+                            <Text fontSize="xs" color="gray.500" noOfLines={2}>
+                              {pago.observaciones}
+                            </Text>
+                          )}
+                        </VStack>
+                        <VStack align="end" spacing={1}>
+                          <Text fontWeight="bold" fontSize="xl" color="green.500">
+                            ${pago.monto.toFixed(2)}
+                          </Text>
+                          <Badge colorScheme={getEstadoColor(pago.estado)}>
+                            {pago.estado}
+                          </Badge>
+                        </VStack>
+                      </HStack>
+
+                      <Divider />
+
+                      {/* Representante */}
+                      <Box>
+                        <Text fontSize="sm" color="gray.600" mb={1}>Representante:</Text>
+                        <VStack align="start" spacing={0.5}>
+                          <Text fontSize="sm" fontWeight="bold">{pago.representante.nombre}</Text>
+                          <Text fontSize="xs" color="gray.500">{pago.representante.cedula}</Text>
+                          <Text fontSize="xs" color="gray.500">{pago.representante.email}</Text>
+                        </VStack>
+                      </Box>
+
+                      <Divider />
+
+                      {/* Fechas y Estado */}
+                      <SimpleGrid columns={2} spacing={3}>
+                        <Box>
+                          <Text fontSize="sm" color="gray.600" mb={1}>Vencimiento:</Text>
+                          <Text fontSize="sm" fontWeight="medium">
+                            {format(new Date(pago.fechaVencimiento), 'dd/MM/yyyy', { locale: es })}
+                          </Text>
+                        </Box>
+                        <Box>
+                          <Text fontSize="sm" color="gray.600" mb={1}>Fecha Pago:</Text>
+                          {pago.fechaPago ? (
+                            <Text fontSize="sm" fontWeight="medium">
+                              {format(new Date(pago.fechaPago), 'dd/MM/yyyy', { locale: es })}
+                            </Text>
+                          ) : (
+                            <Text fontSize="sm" color="gray.400">-</Text>
+                          )}
+                        </Box>
+                      </SimpleGrid>
+
+                      <Divider />
+
+                      {/* Verificación y Método */}
+                      <SimpleGrid columns={2} spacing={3}>
+                        <Box>
+                          <Text fontSize="sm" color="gray.600" mb={1}>Verificación:</Text>
+                          <Badge colorScheme={getVerificacionColor(pago.estadoVerificacion || 'Pendiente')}>
+                            {pago.estadoVerificacion || 'Pendiente'}
+                          </Badge>
+                        </Box>
+                        <Box>
+                          <Text fontSize="sm" color="gray.600" mb={1}>Método:</Text>
+                          {pago.metodoPago ? (
+                            <Badge colorScheme={getMetodoPagoColor(pago.metodoPago)}>
+                              {pago.metodoPago}
+                            </Badge>
+                          ) : (
+                            <Text fontSize="sm" color="gray.400">-</Text>
+                          )}
+                        </Box>
+                      </SimpleGrid>
+
+                      <Divider />
+
+                      {/* Acciones */}
+                      <VStack spacing={2} align="stretch">
                         <Button
                           size="sm"
-                          colorScheme="green"
-                          isLoading={verificandoPago === pago.id}
-                          onClick={() => handleVerificarPago(pago.id, 'Aprobado')}
-                          width={{ base: '100%', md: 'auto' }}
+                          leftIcon={<FiEye />}
+                          onClick={() => handleView(pago)}
+                          width="100%"
                         >
-                          Aprobar
+                          Ver Detalles
+                        </Button>
+                        {(pago.estadoVerificacion === 'Pendiente' || !pago.estadoVerificacion) && (
+                          <Stack direction="row" spacing={2}>
+                            <Button
+                              size="sm"
+                              colorScheme="green"
+                              isLoading={verificandoPago === pago.id}
+                              onClick={() => handleVerificarPago(pago.id, 'Aprobado')}
+                              flex={1}
+                            >
+                              Aprobar
+                            </Button>
+                            <Button
+                              size="sm"
+                              colorScheme="red"
+                              isLoading={verificandoPago === pago.id}
+                              onClick={() => handleVerificarPago(pago.id, 'Denegado')}
+                              flex={1}
+                            >
+                              Denegar
+                            </Button>
+                          </Stack>
+                        )}
+                        <Stack direction="row" spacing={2}>
+                          <Button
+                            size="sm"
+                            leftIcon={<FiEdit2 />}
+                            onClick={() => handleEdit(pago)}
+                            flex={1}
+                          >
+                            Editar
+                          </Button>
+                          <Button
+                            size="sm"
+                            leftIcon={<FiTrash2 />}
+                            colorScheme="red"
+                            onClick={() => handleDelete(pago.id)}
+                            flex={1}
+                          >
+                            Eliminar
+                          </Button>
+                        </Stack>
+                      </VStack>
+                    </VStack>
+                  </CardBody>
+                </Card>
+              ))}
+            </SimpleGrid>
+      ) : (
+          <Box overflowX="auto">
+            <Table variant="simple" size="md" minW="1100px">
+              <Thead>
+                <Tr>
+                  <Th>Concepto</Th>
+                  <Th>Representante</Th>
+                  <Th>Monto</Th>
+                  <Th>Vencimiento</Th>
+                  <Th>Fecha Pago</Th>
+                  <Th>Estado</Th>
+                  <Th>Verificación</Th>
+                  <Th>Método</Th>
+                  <Th>Acciones</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
+                {filteredPagos?.map((pago) => (
+                  <Tr key={pago.id}>
+                    <Td>
+                      <VStack align="start" spacing={0.5}>
+                        <Text fontWeight="bold" fontSize="sm">{pago.concepto}</Text>
+                        {pago.observaciones && (
+                          <Text fontSize="xs" color="gray.500" noOfLines={1}>
+                            {pago.observaciones}
+                          </Text>
+                        )}
+                      </VStack>
+                    </Td>
+                    <Td>
+                      <VStack align="start" spacing={0.5}>
+                        <Text fontWeight="bold" fontSize="xs">{pago.representante.nombre}</Text>
+                        <Text fontSize="xs" color="gray.500">{pago.representante.cedula}</Text>
+                      </VStack>
+                    </Td>
+                    <Td>
+                      <Text fontWeight="bold" fontSize="sm" color="green.500">
+                        ${pago.monto.toFixed(2)}
+                      </Text>
+                    </Td>
+                    <Td>
+                      <Text fontSize="xs">
+                        {format(new Date(pago.fechaVencimiento), 'dd/MM/yyyy', { locale: es })}
+                      </Text>
+                    </Td>
+                    <Td>
+                      {pago.fechaPago ? (
+                        <Text fontSize="xs">
+                          {format(new Date(pago.fechaPago), 'dd/MM/yyyy', { locale: es })}
+                        </Text>
+                      ) : (
+                        <Text fontSize="xs" color="gray.400">-</Text>
+                      )}
+                    </Td>
+                    <Td>
+                      <Badge colorScheme={getEstadoColor(pago.estado)} fontSize="xs">
+                        {pago.estado}
+                      </Badge>
+                    </Td>
+                    <Td>
+                      <Badge colorScheme={getVerificacionColor(pago.estadoVerificacion || 'Pendiente')} fontSize="xs">
+                        {pago.estadoVerificacion || 'Pendiente'}
+                      </Badge>
+                    </Td>
+                    <Td>
+                      {pago.metodoPago ? (
+                        <Badge colorScheme={getMetodoPagoColor(pago.metodoPago)} fontSize="xs">
+                          {pago.metodoPago}
+                        </Badge>
+                      ) : (
+                        <Text fontSize="xs" color="gray.400">-</Text>
+                      )}
+                    </Td>
+                    <Td>
+                      <HStack spacing={1} flexWrap="wrap">
+                        <Button
+                          size="xs"
+                          leftIcon={<FiEye />}
+                          onClick={() => handleView(pago)}
+                        >
+                          Ver
+                        </Button>
+                        {(pago.estadoVerificacion === 'Pendiente' || !pago.estadoVerificacion) && (
+                          <>
+                            <Button
+                              size="xs"
+                              colorScheme="green"
+                              isLoading={verificandoPago === pago.id}
+                              onClick={() => handleVerificarPago(pago.id, 'Aprobado')}
+                            >
+                              Aprobar
+                            </Button>
+                            <Button
+                              size="xs"
+                              colorScheme="red"
+                              isLoading={verificandoPago === pago.id}
+                              onClick={() => handleVerificarPago(pago.id, 'Denegado')}
+                            >
+                              Denegar
+                            </Button>
+                          </>
+                        )}
+                        <Button
+                          size="xs"
+                          leftIcon={<FiEdit2 />}
+                          onClick={() => handleEdit(pago)}
+                        >
+                          Editar
                         </Button>
                         <Button
-                          size="sm"
+                          size="xs"
+                          leftIcon={<FiTrash2 />}
                           colorScheme="red"
-                          isLoading={verificandoPago === pago.id}
-                          onClick={() => handleVerificarPago(pago.id, 'Denegado')}
-                          width={{ base: '100%', md: 'auto' }}
+                          onClick={() => handleDelete(pago.id)}
                         >
-                          Denegar
+                          Eliminar
                         </Button>
-                      </>
-                    )}
-                    <Button
-                      size="sm"
-                      leftIcon={<FiEdit2 />}
-                      onClick={() => handleEdit(pago)}
-                      width={{ base: '100%', md: 'auto' }}
-                    >
-                      Editar
-                    </Button>
-                    <Button
-                      size="sm"
-                      leftIcon={<FiTrash2 />}
-                      colorScheme="red"
-                      onClick={() => handleDelete(pago.id)}
-                      width={{ base: '100%', md: 'auto' }}
-                    >
-                      Eliminar
-                    </Button>
-                  </Stack>
-                </Td>
-              </Tr>
-            ))}
-          </Tbody>
-        </Table>
-      </Box>
+                      </HStack>
+                    </Td>
+                  </Tr>
+                ))}
+              </Tbody>
+            </Table>
+          </Box>
+      )}
 
       {/* Modal de formulario */}
       <Modal isOpen={isOpen} onClose={onClose} size="xl">

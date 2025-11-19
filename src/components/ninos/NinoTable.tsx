@@ -12,7 +12,12 @@ import {
   Badge,
   Button,
   HStack,
-  Stack
+  Stack,
+  SimpleGrid,
+  Card,
+  CardBody,
+  Divider,
+  useBreakpointValue
 } from '@chakra-ui/react'
 import { FiEdit2, FiTrash2, FiEye, FiTrendingUp } from 'react-icons/fi'
 import { format } from 'date-fns'
@@ -62,20 +67,140 @@ export const NinoTable: React.FC<NinoTableProps> = ({
   getCategoriaColor,
   getNivelColor
 }) => {
+  const showTable = useBreakpointValue({ base: false, lg: true })
+
+  // Vista de Cards para móvil
+  if (!showTable) {
+    return (
+      <SimpleGrid columns={{ base: 1, sm: 2 }} spacing={4}>
+        {ninos?.map((nino) => (
+          <Card key={nino.id} size="sm">
+            <CardBody>
+              <VStack align="stretch" spacing={3}>
+                {/* Header con nombre y estado */}
+                <HStack justify="space-between" align="start">
+                  <VStack align="start" spacing={1} flex={1}>
+                    <Text fontWeight="bold" fontSize="lg">
+                      {nino.nombre} {nino.apellido}
+                    </Text>
+                    {nino.alergias && (
+                      <Text fontSize="xs" color="red.500">
+                        ⚠️ {nino.alergias}
+                      </Text>
+                    )}
+                  </VStack>
+                  <Badge colorScheme={nino.activo ? 'green' : 'red'}>
+                    {nino.activo ? 'Activo' : 'Inactivo'}
+                  </Badge>
+                </HStack>
+
+                <Divider />
+
+                {/* Información básica */}
+                <VStack align="stretch" spacing={2}>
+                  <HStack justify="space-between">
+                    <Text fontSize="sm" color="gray.600">Cédula:</Text>
+                    <Text fontSize="sm" fontWeight="medium">{nino.cedula || '-'}</Text>
+                  </HStack>
+                  <HStack justify="space-between">
+                    <Text fontSize="sm" color="gray.600">Fecha Nacimiento:</Text>
+                    <Text fontSize="sm" fontWeight="medium">
+                      {format(new Date(nino.fechaNacimiento), 'dd/MM/yyyy', { locale: es })}
+                    </Text>
+                  </HStack>
+                  <HStack justify="space-between">
+                    <Text fontSize="sm" color="gray.600">Categoría:</Text>
+                    <Badge colorScheme={getCategoriaColor(nino.categoria)}>
+                      {nino.categoria}
+                    </Badge>
+                  </HStack>
+                  <HStack justify="space-between">
+                    <Text fontSize="sm" color="gray.600">Nivel:</Text>
+                    <Badge colorScheme={getNivelColor(nino.nivel)}>
+                      {nino.nivel}
+                    </Badge>
+                  </HStack>
+                </VStack>
+
+                <Divider />
+
+                {/* Representante */}
+                <Box>
+                  <Text fontSize="sm" color="gray.600" mb={1}>Representante:</Text>
+                  <VStack align="start" spacing={0.5}>
+                    <Text fontSize="sm" fontWeight="bold">{nino.representante.nombre}</Text>
+                    <Text fontSize="xs" color="gray.500">{nino.representante.cedula}</Text>
+                    <Text fontSize="xs" color="gray.500">{nino.representante.telefono}</Text>
+                  </VStack>
+                </Box>
+
+                <Divider />
+
+                {/* Acciones */}
+                <VStack spacing={2} align="stretch">
+                  <Button
+                    size="sm"
+                    leftIcon={<FiEye />}
+                    colorScheme="blue"
+                    onClick={() => onView(nino)}
+                    width="100%"
+                  >
+                    Ver Documentos
+                  </Button>
+                  {onDesarrollo && (
+                    <Button
+                      size="sm"
+                      leftIcon={<FiTrendingUp />}
+                      colorScheme="purple"
+                      onClick={() => onDesarrollo(nino)}
+                      width="100%"
+                    >
+                      Desarrollo
+                    </Button>
+                  )}
+                  <Stack direction="row" spacing={2}>
+                    <Button
+                      size="sm"
+                      leftIcon={<FiEdit2 />}
+                      onClick={() => onEdit(nino)}
+                      flex={1}
+                    >
+                      Editar
+                    </Button>
+                    {onDelete && (
+                      <Button
+                        size="sm"
+                        leftIcon={<FiTrash2 />}
+                        colorScheme="red"
+                        onClick={() => onDelete(nino.id)}
+                        flex={1}
+                      >
+                        Eliminar
+                      </Button>
+                    )}
+                  </Stack>
+                </VStack>
+              </VStack>
+            </CardBody>
+          </Card>
+        ))}
+      </SimpleGrid>
+    )
+  }
+
+  // Vista de Tabla para desktop
   return (
     <Box overflowX="auto">
-      <Table variant="simple" size="md" minW="900px">
+      <Table variant="simple" size="md" minW="1000px">
         <Thead>
           <Tr>
-            <Th>Nombre Completo</Th>
+            <Th>Nombre</Th>
             <Th>Cédula</Th>
-            <Th>Fecha Nacimiento</Th>
+            <Th>Nacimiento</Th>
             <Th>Categoría</Th>
             <Th>Nivel</Th>
             <Th>Representante</Th>
             <Th>Estado</Th>
-            <Th>Ver Documentos</Th>
-            {onDesarrollo && <Th>Desarrollo</Th>}
             <Th>Acciones</Th>
           </Tr>
         </Thead>
@@ -84,86 +209,79 @@ export const NinoTable: React.FC<NinoTableProps> = ({
             <Tr key={nino.id}>
               <Td>
                 <VStack align="start" spacing={1}>
-                  <Text fontWeight="bold">{nino.nombre} {nino.apellido}</Text>
+                  <Text fontWeight="bold" fontSize="sm">
+                    {nino.nombre} {nino.apellido}
+                  </Text>
                   {nino.alergias && (
-                    <Text fontSize="sm" color="red.500">
+                    <Text fontSize="xs" color="red.500">
                       ⚠️ {nino.alergias}
                     </Text>
                   )}
                 </VStack>
               </Td>
-              <Td>{nino.cedula || '-'}</Td>
-              <Td>{format(new Date(nino.fechaNacimiento), 'dd/MM/yyyy', { locale: es })}</Td>
+              <Td fontSize="sm">{nino.cedula || '-'}</Td>
+              <Td fontSize="sm">
+                {format(new Date(nino.fechaNacimiento), 'dd/MM/yyyy', { locale: es })}
+              </Td>
               <Td>
-                <Badge colorScheme={getCategoriaColor(nino.categoria)}>
+                <Badge colorScheme={getCategoriaColor(nino.categoria)} fontSize="xs">
                   {nino.categoria}
                 </Badge>
               </Td>
               <Td>
-                <Badge colorScheme={getNivelColor(nino.nivel)}>
+                <Badge colorScheme={getNivelColor(nino.nivel)} fontSize="xs">
                   {nino.nivel}
                 </Badge>
               </Td>
               <Td>
-                <VStack align="start" spacing={1}>
-                  <Text fontSize="sm" fontWeight="bold">{nino.representante.nombre}</Text>
+                <VStack align="start" spacing={0.5}>
+                  <Text fontSize="xs" fontWeight="bold">{nino.representante.nombre}</Text>
                   <Text fontSize="xs" color="gray.500">{nino.representante.cedula}</Text>
-                  <Text fontSize="xs" color="gray.500">{nino.representante.telefono}</Text>
                 </VStack>
               </Td>
               <Td>
-                <Badge colorScheme={nino.activo ? 'green' : 'red'}>
+                <Badge colorScheme={nino.activo ? 'green' : 'red'} fontSize="xs">
                   {nino.activo ? 'Activo' : 'Inactivo'}
                 </Badge>
               </Td>
               <Td>
-                <Button
-                  size="sm"
-                  leftIcon={<FiEye />}
-                  colorScheme="blue"
-                  onClick={() => onView(nino)}
-                >
-                  Ver Documentos
-                </Button>
-              </Td>
-              {onDesarrollo && (
-                <Td>
+                <HStack spacing={1} flexWrap="wrap">
                   <Button
-                    size="sm"
-                    leftIcon={<FiTrendingUp />}
-                    colorScheme="purple"
-                    onClick={() => onDesarrollo(nino)}
+                    size="xs"
+                    leftIcon={<FiEye />}
+                    colorScheme="blue"
+                    onClick={() => onView(nino)}
                   >
-                    Desarrollo
+                    Ver
                   </Button>
-                </Td>
-              )}
-              <Td>
-                <Stack
-                  direction={{ base: 'column', sm: 'row' }}
-                  spacing={2}
-                  align={{ base: 'stretch', sm: 'center' }}
-                >
+                  {onDesarrollo && (
+                    <Button
+                      size="xs"
+                      leftIcon={<FiTrendingUp />}
+                      colorScheme="purple"
+                      onClick={() => onDesarrollo(nino)}
+                    >
+                      Desarrollo
+                    </Button>
+                  )}
                   <Button
-                    size="sm"
+                    size="xs"
                     leftIcon={<FiEdit2 />}
                     onClick={() => onEdit(nino)}
-                    width={{ base: '100%', sm: 'auto' }}
                   >
                     Editar
                   </Button>
                   {onDelete && (
                     <Button
-                      size="sm"
+                      size="xs"
                       leftIcon={<FiTrash2 />}
                       colorScheme="red"
                       onClick={() => onDelete(nino.id)}
-                      width={{ base: '100%', sm: 'auto' }}
                     >
                       Eliminar
                     </Button>
                   )}
-                </Stack>
+                </HStack>
               </Td>
             </Tr>
           ))}

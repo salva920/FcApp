@@ -33,6 +33,8 @@ import Webcam from 'react-webcam'
 import { useQuery } from '@tanstack/react-query'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
+import { useFaceRecognition } from '@/hooks/useFaceRecognition'
+import { base64ToFloat32Array } from '@/lib/base64Utils'
 
 interface Nino {
   id: string
@@ -81,161 +83,49 @@ export default function CheckInPage() {
   const cardBg = useColorModeValue('white', 'gray.800')
   const borderColor = useColorModeValue('gray.200', 'gray.600')
 
+  // Hook de reconocimiento facial
+  const { modelsLoaded, extractDescriptor, calculateSimilarity, detectFace } = useFaceRecognition()
+
   // Obtener todos los niños con descriptores faciales
   const { data: ninos, isLoading } = useQuery<Nino[]>({
     queryKey: ['ninos-with-faces'],
     queryFn: async () => {
-      const res = await fetch('/api/ninos')
+      // Incluir descriptores faciales en la consulta
+      const res = await fetch('/api/ninos?includeFaceDescriptor=true')
       if (!res.ok) throw new Error('Error al cargar niños')
       return res.json()
     }
   })
 
-  // Detectar rostros en tiempo real
-  const detectFaces = useCallback(async () => {
-    if (!webcamRef.current || !isScanning) return
-
-    try {
-      const imageSrc = webcamRef.current.getScreenshot()
-      if (!imageSrc) return
-      
-      // console.log('🔍 Analizando imagen para detección facial...') // Comentado para reducir logs
-
-      // Análisis básico de imagen para simular detección de rostros
-      const img = new window.Image()
-      img.crossOrigin = 'anonymous'
-      
-      img.onload = () => {
-        try {
-          // Análisis básico de imagen para simular detección de rostros
-          const canvas = document.createElement('canvas')
-          const ctx = canvas.getContext('2d')
-          if (!ctx) return
-
-          canvas.width = img.width
-          canvas.height = img.height
-          ctx.drawImage(img, 0, 0)
-
-          // Simular detección basada en análisis de brillo y contraste
-          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
-          const data = imageData.data
-          
-          let totalBrightness = 0
-          let pixelCount = 0
-          
-          for (let i = 0; i < data.length; i += 4) {
-            const brightness = (data[i] + data[i + 1] + data[i + 2]) / 3
-            totalBrightness += brightness
-            pixelCount++
-          }
-          
-          const avgBrightness = totalBrightness / pixelCount
-          
-          // Simular detección de rostro si la imagen tiene un brillo promedio razonable
-          const hasFace = avgBrightness > 50 && avgBrightness < 200
-          
-          if (hasFace) {
-            setFaceDetected(true)
-            // Posicionar el recuadro de detección en el centro de la imagen (donde está el rostro)
-            // Posicionar el recuadro de detección centrado en el área facial
-            const boxWidth = canvas.width * 0.35  // Tamaño apropiado para el rostro
-            const boxHeight = boxWidth * 1.2      // Ligeramente más alto para cubrir el rostro
-            const boxX = (canvas.width - boxWidth) / 2
-            const boxY = (canvas.height - boxHeight) / 2 - (canvas.height * 0.05) // Centrado con ligero ajuste hacia arriba
-            
-            setDetectionBox({
-              x: boxX,
-              y: boxY,
-              width: boxWidth,
-              height: boxHeight
-            })
-            
-            // Reconocimiento automático inmediato al detectar rostro
-            if (!isRecognizing && !recognizedNino && isScanning && !autoRecognitionTriggered) {
-              console.log('🟢 Rostro detectado, iniciando reconocimiento automático...')
-              setAutoRecognitionTriggered(true)
-              // Detener el escaneo para evitar múltiples reconocimientos
-              setIsScanning(false)
-              // Ejecutar reconocimiento inmediatamente
-              setTimeout(() => {
-                console.log('🔍 Ejecutando reconocimiento...')
-                recognizeNino()
-              }, 500) // Reducido a 500ms para respuesta más rápida
-            }
-          } else {
-            setFaceDetected(false)
-            setDetectionBox(null)
-            setAutoRecognitionTriggered(false)
-          }
-        } catch (err) {
-          console.error('Error en detección facial:', err)
-        }
-      }
-      
-      img.src = imageSrc
-    } catch (err) {
-      console.error('Error en detección facial:', err)
-    }
-  }, [isScanning, isRecognizing, recognizedNino, autoRecognitionTriggered])
-
-  // Ejecutar detección cada 200ms cuando está escaneando
-  useEffect(() => {
-    if (!isScanning) return
-
-    // console.log('📷 Iniciando escaneo de rostros...') // Comentado para reducir logs
-    const interval = setInterval(detectFaces, 200)
-    return () => clearInterval(interval)
-  }, [detectFaces, isScanning])
-
-  // Reconocer niño
+  // Reconocer niño usando reconocimiento facial real
   const recognizeNino = useCallback(async () => {
-    if (!webcamRef.current || !ninos) {
-      console.log('❌ No se puede reconocer: webcam o ninos no disponibles')
+    if (!webcamRef.current || !ninos || !modelsLoaded) {
+      console.log('❌ No se puede reconocer: webcam, ninos o modelos no disponibles')
       return
     }
 
     try {
-      console.log('🎯 Iniciando reconocimiento...')
+      console.log('🎯 Iniciando reconocimiento facial real...')
       setIsRecognizing(true)
       
-      const imageSrc = webcamRef.current.getScreenshot()
-      if (!imageSrc) {
-        throw new Error('No se pudo capturar la imagen')
+      const video = webcamRef.current.video
+      if (!video || video.readyState !== video.HAVE_ENOUGH_DATA) {
+        throw new Error('El video no está listo')
+      }
+
+      // Extraer descriptor facial real usando face-api.js
+      const descriptor = await extractDescriptor(video)
+      
+      if (!descriptor) {
+        throw new Error('No se pudo extraer el descriptor facial. Asegúrate de que el rostro esté bien visible y centrado.')
+      }
+
+      // Validar que el descriptor sea válido
+      if (!(descriptor instanceof Float32Array) || descriptor.length === 0) {
+        throw new Error('El descriptor facial extraído no es válido. Intenta nuevamente.')
       }
       
-      console.log('📸 Imagen capturada para reconocimiento')
-
-      // Crear elemento de imagen para análisis
-      const img = new window.Image()
-      img.crossOrigin = 'anonymous'
-      
-      await new Promise((resolve, reject) => {
-        img.onload = resolve
-        img.onerror = reject
-        img.src = imageSrc
-      })
-
-      // Generar descriptor facial simulado basado en la imagen
-      const canvas = document.createElement('canvas')
-      const ctx = canvas.getContext('2d')
-      if (!ctx) throw new Error('No se pudo crear contexto de canvas')
-
-      canvas.width = img.width
-      canvas.height = img.height
-      ctx.drawImage(img, 0, 0)
-
-      // Extraer características básicas de la imagen para crear un descriptor simulado
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
-      const data = imageData.data
-      
-      // Crear descriptor facial simulado basado en características de la imagen
-      const descriptor = new Float32Array(128)
-      for (let i = 0; i < 128; i++) {
-        // Usar diferentes partes de la imagen para generar el descriptor
-        const pixelIndex = (i * 4) % data.length
-        const brightness = (data[pixelIndex] + data[pixelIndex + 1] + data[pixelIndex + 2]) / 3
-        descriptor[i] = brightness / 255 // Normalizar entre 0 y 1
-      }
+      console.log('📸 Descriptor facial extraído:', descriptor.length, 'dimensiones')
 
       // Buscar coincidencias con niños registrados
       const ninosWithFaces = ninos.filter(nino => nino.faceDescriptor && nino.faceImageUrl)
@@ -250,18 +140,19 @@ export default function CheckInPage() {
         if (!nino.faceDescriptor) continue
         
         try {
-          const existingDescriptor = new Float32Array(
-            JSON.parse(Buffer.from(nino.faceDescriptor, 'base64').toString())
-          )
+          // Decodificar descriptor desde Base64 usando función helper del navegador
+          const existingDescriptor = base64ToFloat32Array(nino.faceDescriptor)
           
-          // Calcular similitud
+          // Calcular similitud usando el método del hook
           const similarity = calculateSimilarity(descriptor, existingDescriptor)
           
-          console.log(`🎯 Similitud con ${nino.nombre} ${nino.apellido}:`, similarity)
+          console.log(`🎯 Similitud con ${nino.nombre} ${nino.apellido}:`, similarity.toFixed(3))
           
-              if (similarity > 0.1 && (!bestMatch || similarity > bestMatch.similarity)) {
-                bestMatch = { nino, similarity }
-              }
+          // Umbral ajustado: con la nueva función, 0.5 es el punto de corte
+          // Aceptamos similitudes >= 0.4 para ser más permisivos con variaciones de iluminación/ángulo
+          if (similarity >= 0.4 && (!bestMatch || similarity > bestMatch.similarity)) {
+            bestMatch = { nino, similarity }
+          }
         } catch (err) {
           console.error('Error procesando descriptor:', err)
         }
@@ -288,11 +179,30 @@ export default function CheckInPage() {
           duration: 3000
         })
       } else {
-        console.log('❌ No se encontró coincidencia con umbral de 0.1')
+        // Encontrar la mejor similitud para mostrar en el mensaje
+        let maxSimilarity = 0
+        let bestNinoName = ''
+        for (const nino of ninosWithFaces) {
+          if (!nino.faceDescriptor) continue
+          try {
+            const existingDesc = base64ToFloat32Array(nino.faceDescriptor)
+            const sim = calculateSimilarity(descriptor, existingDesc)
+            if (sim > maxSimilarity) {
+              maxSimilarity = sim
+              bestNinoName = `${nino.nombre} ${nino.apellido}`
+            }
+          } catch (err) {
+            console.error('Error calculando similitud:', err)
+          }
+        }
+        
+        console.log('❌ No se encontró coincidencia con umbral de 0.4')
         console.log('👥 Niños disponibles para comparación:', ninosWithFaces.length)
+        console.log(`📊 Mejor similitud encontrada: ${maxSimilarity.toFixed(3)} (${bestNinoName})`)
+        
         toast({
           title: 'Niño no reconocido',
-          description: `No se encontró coincidencia. Niños registrados con reconocimiento: ${ninosWithFaces.length}. Revisa la consola para más detalles.`,
+          description: `No se encontró coincidencia suficiente (umbral: 40%, mejor: ${Math.round(maxSimilarity * 100)}% - ${bestNinoName}). Niños registrados: ${ninosWithFaces.length}`,
           status: 'warning',
           duration: 5000
         })
@@ -316,31 +226,75 @@ export default function CheckInPage() {
     } finally {
       setIsRecognizing(false)
     }
-  }, [faceDetected, ninos, toast])
+  }, [ninos, modelsLoaded, extractDescriptor, calculateSimilarity, toast])
 
-  // Función para calcular similitud
-  const calculateSimilarity = (desc1: Float32Array, desc2: Float32Array): number => {
-    if (desc1.length !== desc2.length) return 0
+  // Detectar rostros en tiempo real usando face-api.js
+  const detectFaces = useCallback(async () => {
+    if (!webcamRef.current || !isScanning || !modelsLoaded) return
 
-    let sum = 0
-    let count = 0
-    
-    // Comparar solo los primeros 32 valores para hacer la comparación más rápida y menos estricta
-    const maxLength = Math.min(32, desc1.length, desc2.length)
-    
-    for (let i = 0; i < maxLength; i++) {
-      const diff = Math.abs(desc1[i] - desc2[i])
-      sum += diff
-      count++
+    try {
+      const video = webcamRef.current.video
+      if (!video || video.readyState !== video.HAVE_ENOUGH_DATA) return
+
+      // Validar dimensiones del video
+      if (!video.videoWidth || !video.videoHeight) {
+        return
+      }
+
+      // Detectar rostro completo (con caja de detección)
+      const faceDetection = await detectFace(video)
+      
+      if (faceDetection && faceDetection.detection && faceDetection.detection.box) {
+        const box = faceDetection.detection.box
+        
+        // Validar que la caja tenga valores válidos
+        if (box.x !== null && box.x !== undefined &&
+            box.y !== null && box.y !== undefined &&
+            box.width !== null && box.width !== undefined &&
+            box.height !== null && box.height !== undefined &&
+            box.width > 0 && box.height > 0) {
+          setFaceDetected(true)
+          setDetectionBox({
+            x: box.x,
+            y: box.y,
+            width: box.width,
+            height: box.height
+          })
+          
+          // Reconocimiento automático inmediato al detectar rostro
+          if (!isRecognizing && !recognizedNino && isScanning && !autoRecognitionTriggered) {
+            console.log('🟢 Rostro detectado, iniciando reconocimiento automático...')
+            setAutoRecognitionTriggered(true)
+            setIsScanning(false)
+            setTimeout(() => {
+              console.log('🔍 Ejecutando reconocimiento...')
+              recognizeNino()
+            }, 500)
+          }
+        } else {
+          setFaceDetected(false)
+          setDetectionBox(null)
+          setAutoRecognitionTriggered(false)
+        }
+      } else {
+        setFaceDetected(false)
+        setDetectionBox(null)
+        setAutoRecognitionTriggered(false)
+      }
+    } catch (err) {
+      console.error('Error en detección facial:', err)
+      setFaceDetected(false)
+      setDetectionBox(null)
     }
-    
-    const avgDiff = sum / count
-    // Convertir diferencia promedio a similitud (0-1)
-    const similarity = Math.max(0, 1 - (avgDiff * 3)) // Multiplicar por 3 para hacer más permisivo
-    
-    console.log(`Similitud calculada: ${similarity.toFixed(3)} (diferencia promedio: ${avgDiff.toFixed(3)})`)
-    return similarity
-  }
+  }, [isScanning, isRecognizing, recognizedNino, autoRecognitionTriggered, modelsLoaded, detectFace, recognizeNino])
+
+  // Ejecutar detección cada 200ms cuando está escaneando
+  useEffect(() => {
+    if (!isScanning) return
+
+    const interval = setInterval(detectFaces, 200)
+    return () => clearInterval(interval)
+  }, [detectFaces, isScanning])
 
   // Función para registrar check-in
   const registerCheckIn = async (tipo: 'entrada' | 'salida') => {
@@ -500,6 +454,7 @@ export default function CheckInPage() {
                   colorScheme={isScanning ? "red" : "blue"}
                   leftIcon={<FiCamera />}
                   size="lg"
+                  isDisabled={!modelsLoaded}
                 >
                   {isScanning ? "Detener Escaneo" : "Iniciar Escaneo"}
                 </Button>
