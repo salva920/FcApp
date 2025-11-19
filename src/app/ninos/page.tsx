@@ -332,20 +332,28 @@ export default React.memo(function NinosPage() {
         if (uploadResponse.ok) {
           const uploadResult = await uploadResponse.json()
           
+          // Si el upload falló, usar la imagen base64 directamente
+          let imageUrl = uploadResult.fileUrl
+          if (!imageUrl && dataToUse.photoData) {
+            // Si no se pudo subir, usar la imagen base64 capturada
+            imageUrl = dataToUse.photoData
+          }
+          
           // Actualizar el formulario con la URL del archivo subido y el descriptor facial
           // Convertir Float32Array a Base64 usando función helper del navegador
           const descriptorBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(Array.from(dataToUse.faceDescriptor)))))
           
           setFormData(prev => ({
             ...prev,
-            fotoFile: uploadResult.fileUrl,
-            faceImageUrl: uploadResult.fileUrl,
+            fotoFile: imageUrl,
+            faceImageUrl: imageUrl,
             faceDescriptor: descriptorBase64
           }))
           
           console.log('Formulario actualizado con datos faciales:')
-          console.log('faceImageUrl:', uploadResult.fileUrl)
+          console.log('faceImageUrl:', imageUrl)
           console.log('faceDescriptor:', descriptorBase64 ? 'Guardado' : 'Vacío')
+          console.log('isBase64:', uploadResult.isBase64 || false)
           
           toast({
             title: 'Foto guardada',
@@ -354,7 +362,26 @@ export default React.memo(function NinosPage() {
             duration: 3000
           })
         } else {
-          throw new Error('Error al subir la foto')
+          // Si el upload falla, usar la imagen base64 directamente
+          const errorData = await uploadResponse.json().catch(() => ({}))
+          console.warn('Error al subir archivo, usando base64 directamente:', errorData)
+          
+          // Convertir Float32Array a Base64
+          const descriptorBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(Array.from(dataToUse.faceDescriptor)))))
+          
+          setFormData(prev => ({
+            ...prev,
+            fotoFile: dataToUse.photoData,
+            faceImageUrl: dataToUse.photoData,
+            faceDescriptor: descriptorBase64
+          }))
+          
+          toast({
+            title: 'Foto guardada (modo local)',
+            description: 'La foto se guardó como base64. Funcionará correctamente.',
+            status: 'success',
+            duration: 3000
+          })
         }
       } catch (error) {
         console.error('Error guardando foto facial:', error)
